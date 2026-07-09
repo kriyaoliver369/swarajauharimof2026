@@ -8,11 +8,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
-        }
-        /* Custom scrollbar for premium feel */
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #1e293b; }
         ::-webkit-scrollbar-thumb { background: #eab308; border-radius: 3px; }
@@ -24,7 +20,6 @@
         <div class="w-full max-w-md bg-slate-800/80 backdrop-blur-md border border-amber-500/40 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
             <div class="absolute -top-24 -left-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl"></div>
             <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl"></div>
-
             <div class="flex flex-col items-center mb-8 relative z-10">
                 <div class="w-16 h-16 bg-slate-900 border-2 border-amber-500 rounded-full flex items-center justify-center shadow-lg mb-4">
                     <i data-lucide="crown" class="w-8 h-8 text-amber-500"></i>
@@ -32,7 +27,6 @@
                 <h1 class="text-2xl font-bold tracking-tight text-center text-slate-100">Attendance Management System</h1>
                 <p class="text-xs text-slate-400 mt-1">Swara Jauhari MOF</p>
             </div>
-
             <form id="login-form" class="space-y-4 relative z-10" onsubmit="handleLogin(event)">
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Admin Email Address</label>
@@ -47,26 +41,18 @@
                     <i data-lucide="log-in" class="w-4 h-4"></i> Login Dashboard
                 </button>
             </form>
-
             <div class="relative flex py-5 items-center my-2 relative z-10">
                 <div class="flex-grow border-t border-slate-700/60"></div>
                 <span class="flex-shrink mx-4 text-slate-500 text-xs font-bold tracking-widest uppercase">OR</span>
                 <div class="flex-grow border-t border-slate-700/60"></div>
             </div>
-
             <button onclick="handleViewOnly()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl shadow-lg shadow-blue-600/10 active:scale-[0.99] transition-all text-sm flex items-center justify-center gap-2 relative z-10">
                 <i data-lucide="eye" class="w-4 h-4"></i> View-Only Access
             </button>
-
-            <p class="text-center text-xs text-slate-500 mt-8 relative z-10 tracking-wide">
-                <i data-lucide="shield-alert" class="w-3.5 h-3.5 inline mr-1 align-text-bottom"></i> Authorized admins only
-            </p>
         </div>
     </div>
 
-
     <div id="app-container" class="hidden flex-1 flex flex-col">
-        
         <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 shadow-xl">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
@@ -85,7 +71,6 @@
                         </button>
                     </div>
                 </div>
-
                 <nav class="flex space-x-1 pb-3 overflow-x-auto" aria-label="Tabs">
                     <button onclick="switchTab('attendance')" id="tab-attendance" class="tab-btn px-4 py-2 text-xs font-medium rounded-lg flex items-center gap-2 transition-all whitespace-nowrap bg-amber-500 text-slate-950 font-semibold shadow-md">
                         <i data-lucide="calendar-check" class="w-4 h-4"></i> Attendance
@@ -93,18 +78,11 @@
                     <button onclick="switchTab('students')" id="tab-students" class="tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap">
                         <i data-lucide="users" class="w-4 h-4"></i> Students
                     </button>
-                    <button onclick="switchTab('payments')" id="tab-payments" class="tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap">
-                        <i data-lucide="dollar-sign" class="w-4 h-4"></i> Payments
-                    </button>
-                    <button onclick="switchTab('analytics')" id="tab-analytics" class="tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap">
-                        <i data-lucide="pie-chart" class="w-4 h-4"></i> Analytics
-                    </button>
                 </nav>
             </div>
         </header>
 
         <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
-            
             <section id="view-attendance" class="tab-content space-y-6">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 bg-slate-800 border border-slate-700/60 rounded-xl p-5 space-y-4 shadow-md">
@@ -121,14 +99,10 @@
                                     <option value="September 2026">September 2026</option>
                                 </select>
                             </div>
-                            
-                            <div id="date-pickers-container" class="flex flex-wrap gap-2">
-                            </div>
-
+                            <div id="date-pickers-container" class="flex flex-wrap gap-2"></div>
                             <button onclick="addNewLessonDateInput()" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-amber-500 font-medium py-1.5 px-3 rounded-lg text-xs transition-all flex items-center gap-1">
                                 <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i> + Add Lesson Day
                             </button>
-                            
                             <button onclick="saveScheduleConfiguration()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-3 rounded-lg text-xs transition-all flex items-center gap-1">
                                 <i data-lucide="save" class="w-3.5 h-3.5"></i> Sync Dates
                             </button>
@@ -138,10 +112,7 @@
                         <p class="text-xs text-slate-400 mb-3">Sync global attendance roster sheet via external dataset pipelines.</p>
                         <div class="w-full space-y-2">
                             <button onclick="triggerBulkImport('Attendance')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/10">
-                                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Bulk Import Attendance
-                            </button>
-                            <button onclick="downloadAttendancePDF()" class="w-full bg-slate-700 hover:bg-slate-600 border border-slate-600 text-amber-500 font-medium py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-md">
-                                <i data-lucide="download" class="w-4 h-4"></i> Download PDF Report
+                                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Bulk Check All Attendance
                             </button>
                         </div>
                     </div>
@@ -155,248 +126,22 @@
                     <div class="overflow-x-auto">
                         <table class="w-full min-w-[600px] text-left text-sm">
                             <thead class="text-xs text-slate-400 uppercase bg-slate-900/40 border-b border-slate-700/40">
-                                <tr>
-                                </tr>
+                                <tr></tr>
                             </thead>
-                            <tbody id="attendance-table-body" class="divide-y divide-slate-700/40">
-                            </tbody>
+                            <tbody id="attendance-table-body" class="divide-y divide-slate-700/40"></tbody>
                         </table>
-                    </div>
-                </div>
-            </section>
-
-            <section id="view-students" class="tab-content space-y-6 hidden">
-                <div class="flex flex-wrap items-center justify-between gap-4">
-                    <h2 class="text-lg font-bold text-slate-200 tracking-wide flex items-center gap-2">
-                        <i data-lucide="folder-user" class="w-5 h-5 text-amber-500"></i> Active Master Roster
-                    </h2>
-                    <div class="flex items-center gap-2">
-                        <button onclick="openAddStudentModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-amber-500/5">
-                            <i data-lucide="user-plus" class="w-4 h-4"></i> Add Student
-                        </button>
-                        <button onclick="triggerBulkImport('Students')" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-blue-600/5">
-                            <i data-lucide="upload-cloud" class="w-4 h-4"></i> Bulk Import
-                        </button>
-                        <button onclick="saveStudentOrder()" class="bg-purple-600 hover:bg-purple-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-purple-600/5">
-    <i data-lucide="save" class="w-4 h-4"></i> Save Order
-</button>
-                    </div>
-                </div>
-
-                <div class="bg-slate-800 border border-slate-700/60 rounded-xl shadow-lg overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full min-w-[600px] text-left text-sm">
-                            <thead class="text-xs text-slate-400 uppercase bg-slate-900/40 border-b border-slate-700/40">
-                                <tr>
-                                    <th class="px-6 py-3.5 font-semibold">Student Name</th>
-                                    <th class="px-6 py-3.5 font-semibold">Vocal Grade</th>
-                                    <th class="px-6 py-3.5 font-semibold">Vocal Section</th>
-                                    <th class="px-6 py-3.5 text-right font-semibold">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="students-table-body" class="divide-y divide-slate-700/40">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <section id="view-payments" class="tab-content space-y-6 hidden">
-                <div class="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                        <h2 class="text-lg font-bold text-slate-200 tracking-wide flex items-center gap-2">
-                            <i data-lucide="receipt" class="w-5 h-5 text-emerald-500"></i> Financial Billing Ledger
-                        </h2>
-                        <p class="text-xs text-slate-400 mt-1">Track internal monthly transaction updates and balance records</p>
-                    </div>
-                    <button onclick="triggerBulkImport('Payments')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-lg shadow-emerald-600/10">
-                        <i data-lucide="file-check-2" class="w-4 h-4"></i> Bulk Import Payments
-                    </button>
-                </div>
-
-                <div class="bg-slate-800 border border-slate-700/60 rounded-xl shadow-lg overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full min-w-[600px] text-left text-sm">
-                            <thead class="text-xs text-slate-400 uppercase bg-slate-900/40 border-b border-slate-700/40">
-                                <tr>
-                                    <th class="px-6 py-3.5 font-semibold">Student Name</th>
-                                    <th class="px-6 py-3.5 font-semibold">Status</th>
-                                    <th class="px-6 py-3.5 font-semibold">Date Paid</th>
-                                    <th class="px-6 py-3.5 text-right font-semibold">Action Control</th>
-                                </tr>
-                            </thead>
-                            <tbody id="payments-table-body" class="divide-y divide-slate-700/40">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <section id="view-analytics" class="tab-content space-y-6 hidden">
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-slate-800 border border-slate-700/40 p-5 rounded-xl shadow-md flex flex-col justify-between">
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                            <i data-lucide="users-2" class="w-3.5 h-3.5 text-blue-500"></i> Total Students
-                        </span>
-                        <div id="metric-total-students" class="text-3xl font-extrabold text-slate-100 mt-3 text-center">0</div>
-                    </div>
-                    <div class="bg-slate-800 border border-slate-700/40 p-5 rounded-xl shadow-md flex flex-col justify-between">
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                            <i data-lucide="trending-up" class="w-3.5 h-3.5 text-amber-500"></i> Attendance Rate
-                        </span>
-                        <div id="metric-attendance-rate" class="text-3xl font-extrabold text-amber-500 mt-3 text-center">0%</div>
-                    </div>
-                    <div class="bg-slate-800 border border-slate-700/40 p-5 rounded-xl shadow-md flex flex-col justify-between">
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                            <i data-lucide="banknote" class="w-3.5 h-3.5 text-emerald-500"></i> Payments Collected
-                        </span>
-                        <div id="metric-payments-collected" class="text-3xl font-extrabold text-slate-100 mt-3 text-center">0</div>
-                    </div>
-                    <div class="bg-slate-800 border border-slate-700/40 p-5 rounded-xl shadow-md flex flex-col justify-between border-l-2 border-l-rose-500">
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
-                            <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-rose-500"></i> Pending Payments
-                        </span>
-                        <div id="metric-payments-pending" class="text-3xl font-extrabold text-rose-500 mt-3 text-center">0</div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-slate-800 border border-slate-700/60 rounded-xl p-5 shadow-md flex flex-col justify-between">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Attendance Overview</h3>
-                        <div class="flex flex-col sm:flex-row items-center justify-around gap-6 py-2">
-                            <div class="relative w-36 h-36">
-                                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="#334155" stroke-width="3.8"></circle>
-                                    <circle id="donut-segment" cx="18" cy="18" r="15.915" fill="none" stroke="#eab308" stroke-width="3.8" stroke-dasharray="80 20" stroke-dashoffset="0"></circle>
-                                </svg>
-                                <div class="absolute inset-0 flex items-center justify-center flex-col">
-                                    <span id="donut-text" class="text-xl font-bold text-slate-200">80%</span>
-                                    <span class="text-[9px] uppercase tracking-wider text-slate-500">Present</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2 text-xs w-full sm:w-auto">
-                                <div class="flex items-center justify-between gap-8 bg-slate-900/40 px-3 py-2 rounded-lg border border-slate-700/30">
-                                    <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Present Split Ratio</span>
-                                    <span id="donut-legend-present" class="font-mono font-bold text-amber-500">80%</span>
-                                </div>
-                                <div class="flex items-center justify-between gap-8 bg-slate-900/40 px-3 py-2 rounded-lg border border-slate-700/30">
-                                    <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span> Absent Matrix</span>
-                                    <span id="donut-legend-absent" class="font-mono font-bold text-slate-400">20%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-800 border border-slate-700/60 rounded-xl p-5 shadow-md flex flex-col justify-between">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Payment Status</h3>
-                        <div class="space-y-3.5">
-                            <div class="flex justify-between items-center bg-slate-900/60 p-3 rounded-xl border border-slate-700/40">
-                                <span class="text-xs text-slate-400 font-medium">Expected Revenue</span>
-                                <span class="text-sm font-bold text-slate-200">RM 2300</span>
-                            </div>
-                            <div class="flex justify-between items-center bg-emerald-950/20 p-3 rounded-xl border border-emerald-500/20">
-                                <span class="text-xs text-emerald-400 font-medium flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Collected Balance
-                                </span>
-                                <span class="text-sm font-bold text-emerald-400">RM 2000</span>
-                            </div>
-                            <div class="flex justify-between items-center bg-rose-950/20 p-3 rounded-xl border border-rose-500/20">
-                                <span class="text-xs text-rose-400 font-medium flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Balance Outstanding
-                                </span>
-                                <span class="text-sm font-bold text-rose-400">RM 300</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-slate-800 border border-slate-700/60 rounded-xl p-5 shadow-md">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Immediate Attention Required</h3>
-                        <span class="bg-rose-500 text-slate-950 font-extrabold tracking-wide text-[10px] uppercase px-2 py-0.5 rounded-full">Unpaid Students</span>
-                    </div>
-                    <div id="unpaid-glance-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                    </div>
-                </div>
-
-                <div class="bg-slate-800 border border-slate-700/60 rounded-xl p-5 shadow-md space-y-4">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i> Class Achievements Tracker
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="p-3 bg-slate-900/50 rounded-xl border border-slate-700/40 flex items-center justify-between">
-                            <input type="text" value="Sarawak Int'l Choir Fest 2026" class="bg-transparent border-b border-transparent focus:border-amber-500 focus:outline-none text-xs text-slate-200 font-medium w-3/4 py-0.5">
-                            <span class="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Gold Tier</span>
-                        </div>
-                        <div class="p-3 bg-slate-900/50 rounded-xl border border-slate-700/40 flex items-center justify-between">
-                            <input type="text" value="SCSM Poem 2026 Competition" class="bg-transparent border-b border-transparent focus:border-amber-500 focus:outline-none text-xs text-slate-200 font-medium w-3/4 py-0.5">
-                            <span class="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Grand Prix</span>
-                        </div>
-                        <div class="p-3 bg-slate-900/50 rounded-xl border border-slate-700/40 flex items-center justify-between">
-                            <input type="text" value="Sandakan Int'l MDFest Exhibition" class="bg-transparent border-b border-transparent focus:border-amber-500 focus:outline-none text-xs text-slate-200 font-medium w-3/4 py-0.5">
-                            <span class="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Participant</span>
-                        </div>
-                        <div class="p-3 bg-slate-900/50 rounded-xl border border-slate-700/40 flex items-center justify-between">
-                            <input type="text" value="SCC Caroling Showcase Tour" class="bg-transparent border-b border-transparent focus:border-amber-500 focus:outline-none text-xs text-slate-200 font-medium w-3/4 py-0.5">
-                            <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Completed</span>
-                        </div>
                     </div>
                 </div>
             </section>
         </main>
     </div>
 
-    <div id="add-student-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-            <h3 class="text-sm font-bold text-slate-200 tracking-wide uppercase text-amber-500">Register New Student</h3>
-            <form id="add-student-form" onsubmit="handleAddStudentSubmit(event)" class="space-y-4">
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Full Name</label>
-                    <input id="modal-name" type="text" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500" placeholder="e.g. Adrienne Tan">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Vocal Grade</label>
-                        <select id="modal-grade" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500">
-                            <option value="Beginner">Beginner</option>
-                            <option value="Intermediate">Intermediate</option>
-                            <option value="CC1">CC1</option>
-                            <option value="CC2">CC2</option>
-                            <option value="CC3">CC3</option>
-                            <option value="CC4">CC4</option>
-                            <option value="CC5">CC5</option>
-                            <option value="CC6">CC6</option>
-                            <option value="CC7">CC7</option>
-                            <option value="CC8">CC8</option>
-                            <option value="FRC">FRC</option>
-                            <option value="ARC">ARC</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Vocal Section</label>
-                        <select id="modal-section" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500">
-                            <option value="Soprano">Soprano</option>
-                            <option value="Alto">Alto</option>
-                            <option value="Tenor">Tenor</option>
-                            <option value="Bass">Bass</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="flex items-center justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeAddStudentModal()" class="px-4 py-2 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 transition-colors">Cancel</button>
-                    <button type="submit" class="px-4 py-2 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 hover:bg-amber-600 transition-colors">Save Enrollee</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <script>
-        // --- CLEAN INITIAL STATE ENVIRONMENT ---
         let studentsState = [];
         let isAdmin = false;
-        let activeLessonDates = ["2026-07-05", "2026-07-12", "2026-07-19", "2026-07-26"];
+        let activeLessonDates = ["2026-06-05", "2026-06-12", "2026-06-19", "2026-06-26"];
+        const MACRO_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbym0QHXQujNGuvq4tMKnyhoch6pVRFodzjqHp5MLzL1ecdFc8gJjeY4OGWx4zxvxsf2/exec";
 
-        // --- AUTHENTICATION ROUTERS ---
         function handleLogin(e) {
             e.preventDefault();
             const email = document.getElementById('admin-email').value || "admin@system.com";
@@ -412,8 +157,6 @@
         function initializeSession(userLabel) {
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
-            
-            // Sets up layout elements
             renderDatePickerInputs();
             fetchDashboardData();
             lucide.createIcons();
@@ -426,28 +169,18 @@
             document.getElementById('admin-email').value = "";
         }
 
-        // --- TAB ROUTING ENGINE ---
         function switchTab(targetTab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${targetTab}`).classList.remove('hidden');
-
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.className = "tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap";
             });
-
             const activeBtn = document.getElementById(`tab-${targetTab}`);
             activeBtn.className = "tab-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2 transition-all whitespace-nowrap bg-amber-500 text-slate-950 font-semibold shadow-md";
-            
-            if(targetTab === 'analytics') {
-                calculateAnalyticsMetrics();
-            }
         }
 
-        // --- TEMPLATE DATA INJECTION PARSERS ---
         function renderAllData() {
             renderAttendance();
-            renderStudents();
-            renderPayments();
         }
 
         function renderDatePickerInputs() {
@@ -520,89 +253,6 @@
             }).join('');
         }
 
-        function renderStudents() {
-            const tbody = document.getElementById('students-table-body');
-            if (studentsState.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-xs text-slate-500 italic">No student records loaded.</td></tr>`;
-                return;
-            }
-            tbody.innerHTML = studentsState.map((student, idx) => {
-                let badgeClass = "bg-purple-950/40 text-purple-400 border-purple-500/20";
-                if (student.section === "Soprano") badgeClass = "bg-rose-950/40 text-rose-400 border-rose-500/20";
-                if (student.section === "Alto") badgeClass = "bg-amber-950/40 text-amber-400 border-amber-500/20";
-                if (student.section === "Tenor") badgeClass = "bg-blue-950/40 text-blue-400 border-blue-500/20";
-                if (student.section === "Bass") badgeClass = "bg-emerald-950/40 text-emerald-400 border-emerald-500/20";
-
-                return `
-                    <tr class="hover:bg-slate-700/20 transition-colors">
-                        <td class="px-6 py-4 font-medium text-slate-200">
-                            <div class="flex items-center gap-2">
-                                ${isAdmin ? `
-                                <div class="flex flex-col text-slate-500 gap-0.5">
-                                    <button onclick="moveStudentRow(${idx}, -1)" class="hover:text-amber-500 p-0.5"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
-                                    <button onclick="moveStudentRow(${idx}, 1)" class="hover:text-amber-500 p-0.5"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
-                                </div>` : ''}
-                                <span>${student.name}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 font-mono text-xs text-slate-300">${student.grade}</td>
-                        <td class="px-6 py-4">
-                            <span class="${badgeClass} border text-xs px-2.5 py-0.5 rounded-full font-medium">
-                                ${student.section || 'Soprano'}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <button onclick="deleteStudent('${student.id}')" ${!isAdmin ? 'disabled' : ''}
-                                class="border border-red-500/40 text-red-400 hover:bg-red-500 hover:text-white px-2.5 py-1 rounded-lg text-xs font-medium transition-all inline-flex items-center gap-1 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-red-400 disabled:cursor-not-allowed">
-                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-            lucide.createIcons();
-        }
-
-        function moveStudentRow(index, direction) {
-            const targetIndex = index + direction;
-            if (targetIndex < 0 || targetIndex >= studentsState.length) return;
-            
-            const temp = studentsState[index];
-            studentsState[index] = studentsState[targetIndex];
-            studentsState[targetIndex] = temp;
-            
-            renderAllData();
-            console.log("Local arrangement modified.");
-        }
-
-        function renderPayments() {
-            const tbody = document.getElementById('payments-table-body');
-            if (studentsState.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-xs text-slate-500 italic">No ledger rows found.</td></tr>`;
-                return;
-            }
-            tbody.innerHTML = studentsState.map(student => {
-                const statusBadge = student.paid 
-                    ? `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs px-2 py-0.5 rounded-md font-medium inline-flex items-center gap-1"><i data-lucide="check-circle" class="w-3 h-3"></i> Paid</span>`
-                    : `<span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 text-xs px-2 py-0.5 rounded-md font-medium inline-flex items-center gap-1"><i data-lucide="x-circle" class="w-3 h-3"></i> Unpaid</span>`;
-
-                const actionButton = student.paid 
-                    ? `<button onclick="editPaymentStatus('${student.id}')" ${!isAdmin ? 'disabled' : ''} class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1 rounded-lg text-xs font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed">Edit</button>`
-                    : `<button onclick="markStudentAsPaid('${student.id}')" ${!isAdmin ? 'disabled' : ''} class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-3 py-1 rounded-lg text-xs transition-all shadow-md shadow-amber-500/5 disabled:opacity-40 disabled:cursor-not-allowed">Mark Paid</button>`;
-
-                return `
-                    <tr class="hover:bg-slate-700/20 transition-colors">
-                        <td class="px-6 py-4 font-medium text-slate-200">${student.name}</td>
-                        <td class="px-6 py-4">${statusBadge}</td>
-                        <td class="px-6 py-4 font-mono text-xs text-slate-400">${student.datePaid || '—'}</td>
-                        <td class="px-6 py-4 text-right">${actionButton}</td>
-                    </tr>
-                `;
-            }).join('');
-            lucide.createIcons();
-        }
-
-        // --- BUSINESS APPLICATION MUTATION LOGIC ---
         function toggleAttendanceState(id, weekIndex) {
             if(!isAdmin) return;
             const student = studentsState.find(s => s.id === id);
@@ -613,100 +263,47 @@
             }
         }
 
-        function markStudentAsPaid(id) {
-            if(!isAdmin) return;
-            const student = studentsState.find(s => s.id === id);
+        async function updateAttendance(studentId, weekIndex, checkedValue) {
+            const chosenMonth = document.getElementById('config-month').value || "June 2026";
+            const targetDate = activeLessonDates[weekIndex];
+            
+            const student = studentsState.find(s => s.id === studentId);
             if(student) {
-                student.paid = true;
-                student.datePaid = new Date().toISOString().split('T')[0];
-                renderPayments();
-                markAsPaid(id, true, student.datePaid); 
+                if(!student.attendance) student.attendance = [];
+                student.attendance[weekIndex] = checkedValue;
             }
-        }
 
-        function editPaymentStatus(id) {
-            if(!isAdmin) return;
-            const student = studentsState.find(s => s.id === id);
-            if(student) {
-                student.paid = false;
-                student.datePaid = "";
-                renderPayments();
-                markAsPaid(id, false, ""); 
-            }
-        }
-
-        function deleteStudent(id) {
-            if(!isAdmin) return;
-            if(confirm("Are you sure you want to completely clear this student record?")) {
-                studentsState = studentsState.filter(s => s.id !== id);
-                renderAllData();
-            }
-        }
-
-        function openAddStudentModal() { if(isAdmin) document.getElementById('add-student-modal').classList.remove('hidden'); }
-        function closeAddStudentModal() { document.getElementById('add-student-modal').classList.add('hidden'); }
-        
-        function handleAddStudentSubmit(e) {
-            e.preventDefault();
-            const name = document.getElementById('modal-name').value;
-            const grade = document.getElementById('modal-grade').value;
-            const section = document.getElementById('modal-section').value;
-            
-            const studentId = "s" + Date.now();
-
-            const newStudent = {
-                id: studentId,
-                name: name, 
-                grade: grade, 
-                section: section,
-                duration: "Active Member", 
-                attendance: new Array(activeLessonDates.length).fill(false),
-                paid: false, 
-                datePaid: ""
-            };
-            
-            studentsState.push(newStudent);
-            renderAllData();
-            
             executePostPayload({ 
-                action: "addStudent", 
+                action: "updateAttendance", 
                 id: studentId, 
-                name: name, 
-                grade: grade, 
-                section: section
+                month: chosenMonth, 
+                date: targetDate, 
+                status: checkedValue 
             });
-
-            closeAddStudentModal();
-            document.getElementById('add-student-form').reset();
         }
 
         async function triggerBulkImport(context) {
-            if (context !== 'Attendance') {
-                alert(`Bulk data parsing pipeline simulation for [${context}] completed successfully!`);
-                return;
-            }
+            if (context !== 'Attendance') return;
             
             const chosenMonth = document.getElementById('config-month').value || "June 2026";
-            
-            // Temporary loading indicator to give visual feedback
             const btn = document.querySelector("button[onclick*='Attendance']");
             const originalText = btn.innerHTML;
-            btn.innerHTML = `<i class="w-4 h-4 animate-spin"></i> Migrating Rows...`;
+            btn.innerHTML = `<i class="w-4 h-4 animate-spin"></i> Generating Matrix...`;
             btn.disabled = true;
 
             try {
-                executePostPayload({
+                await executePostPayload({
                     action: "bulkImportAttendance",
                     month: chosenMonth,
                     dates: activeLessonDates.join(",")
                 });
                 
-                // Give Google Sheets 4 full seconds to write the data before fetching it back
+                // 4-second delay allows Google Script to cleanly commit spreadsheet values before refresh
                 setTimeout(async () => {
                     await fetchDashboardData();
                     btn.innerHTML = originalText;
                     btn.disabled = false;
-                    alert(`Roster architecture migrated! Baseline vertical matrix entries generated for ${chosenMonth}.`);
+                    alert(`Roster entries generated! All students have been checkmarked Present by default for ${chosenMonth}.`);
                 }, 4000);
                 
             } catch (err) {
@@ -715,58 +312,6 @@
                 btn.disabled = false;
             }
         }
-
-        // --- ANALYTICS DATA CALCULATIONS ---
-        function calculateAnalyticsMetrics() {
-            const total = studentsState.length;
-            document.getElementById('metric-total-students').innerText = total;
-
-            let totalPossibleSlots = total * activeLessonDates.length;
-            let checks = 0;
-            studentsState.forEach(s => {
-                if(s.attendance) {
-                    checks += s.attendance.filter(Boolean).length;
-                }
-            });
-            const rate = totalPossibleSlots > 0 ? Math.round((checks / totalPossibleSlots) * 100) : 0;
-            
-            document.getElementById('metric-attendance-rate').innerText = `${rate}%`;
-
-            const paidCount = studentsState.filter(s => s.paid).length;
-            const pendingCount = studentsState.filter(s => !s.paid).length;
-            document.getElementById('metric-payments-collected').innerText = paidCount;
-            document.getElementById('metric-payments-pending').innerText = pendingCount;
-
-            const donutSegment = document.getElementById('donut-segment');
-            const donutText = document.getElementById('donut-text');
-            const legendPresent = document.getElementById('donut-legend-present');
-            const legendAbsent = document.getElementById('donut-legend-absent');
-
-            const dashArrayValue = `${rate} ${100 - rate}`;
-            donutSegment.setAttribute('stroke-dasharray', dashArrayValue);
-            donutText.innerText = `${rate}%`;
-            legendPresent.innerText = `${rate}%`;
-            legendAbsent.innerText = `${100 - rate}%`;
-
-            const glanceList = document.getElementById('unpaid-glance-list');
-            const unpaidStudents = studentsState.filter(s => !s.paid);
-            if(unpaidStudents.length === 0) {
-                glanceList.innerHTML = `<div class="text-xs text-slate-500 italic col-span-full">All clear. Account balances checked clean.</div>`;
-            } else {
-                glanceList.innerHTML = unpaidStudents.map(s => `
-                    <div class="px-3 py-2 bg-slate-900/40 border border-slate-700/40 rounded-lg flex items-center justify-between">
-                        <span class="text-xs font-medium text-slate-300 truncate">${s.name}</span>
-                        <span class="text-[10px] text-rose-400 font-mono font-bold uppercase">Pending</span>
-                    </div>
-                `).join('');
-            }
-        }
-
-        // =========================================================
-        // =========================================================
-        // 9. GOOGLE APPS SCRIPT WEB APP INTEGRATION INTERFACES
-        // =========================================================
-        const MACRO_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbym0QHXQujNGuvq4tMKnyhoch6pVRFodzjqHp5MLzL1ecdFc8gJjeY4OGWx4zxvxsf2/exec";
 
         async function fetchDashboardData() {
             try {
@@ -788,94 +333,18 @@
             }
         }
 
-        async function updateAttendance(studentId, weekIndex, checkedValue) {
-            const chosenMonth = document.getElementById('config-month').value || "June 2026";
-            const targetDate = activeLessonDates[weekIndex]; // Grab the actual custom selected date string
-            
-            // Update app memory instantly
-            const student = studentsState.find(s => s.id === studentId);
-            if(student) {
-                if(!student.attendance) student.attendance = [];
-                student.attendance[weekIndex] = checkedValue;
-            }
-
-            executePostPayload({ 
-                action: "updateAttendance", 
-                id: studentId, 
-                month: chosenMonth, 
-                date: targetDate, 
-                status: checkedValue 
-            });
-        }
-
-        async function markAsPaid(studentId, isPaid, processingDate) {
-            const payload = { action: "markPaid", id: studentId, paid: isPaid, date: processingDate };
-            executePostPayload(payload);
-        }
-
         async function executePostPayload(data) {
-    try {
-        console.log("Sync outbound network pipeline message scheduled to run:", data);
-        await fetch(MACRO_ENDPOINT_URL, {
-            method: 'POST',
-            // mode: 'no-cors' IS REMOVED HERE
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // CHANGED TO TEXT/PLAIN
-            body: JSON.stringify(data)
-        });
-    } catch (err) {
-        console.error("Critical mapping synchronization pipeline failure:", err);
-    }
-}
-
-        function downloadAttendancePDF() {
-            const chosenMonth = document.getElementById('config-month').value;
-            const tableHtml = document.querySelector('#view-attendance table').outerHTML;
-            
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <html>
-                <head>
-                    <title>Attendance Report - ${chosenMonth}</title>
-                    <style>
-                        body { font-family: 'Helvetica', Arial, sans-serif; color: #334155; padding: 40px; }
-                        .header { border-bottom: 2px solid #eab308; padding-bottom: 15px; margin-bottom: 20px; }
-                        h1 { color: #0f172a; margin: 0; font-size: 24px; }
-                        p { margin: 5px 0 0 0; color: #64748b; font-size: 14px; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 12px; }
-                        th { background-color: #f1f5f9; color: #1e293b; padding: 10px; text-align: left; border-bottom: 2px solid #cbd5e1; }
-                        td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
-                        .text-right { text-align: right; }
-                        .text-center { text-align: center; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h1>Swara Jauhari Choir Attendance Report</h1>
-                        <p><strong>Roster Month:</strong> ${chosenMonth} | <strong>Entity:</strong> MOF Sabah</p>
-                    </div>
-                    \${tableHtml}
-                    <script>
-                        window.onload = function() { window.print(); window.close(); }
-                    <\/script>
-                </body>
-                </html>
-            `);
-            printWindow.document.close();
+            try {
+                // FIXED: Setting headers to text/plain and dropping no-cors lets the payload securely clear browser security filters
+                await fetch(MACRO_ENDPOINT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(data)
+                });
+            } catch (err) {
+                console.error("Pipeline synchronization failure:", err);
+            }
         }
-        function saveStudentOrder() {
-    if(!isAdmin) return;
-    
-    // Grab the current IDs in their new visual order
-    const orderedIds = studentsState.map(s => s.id);
-    
-    // Send the new order to Google Sheets
-    executePostPayload({
-        action: "reorderStudents",
-        orderedIds: orderedIds
-    });
-    
-    alert("New roster order saved to database!");
-}
     </script>
 </body>
 </html>
