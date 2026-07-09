@@ -604,10 +604,9 @@
             if(!isAdmin) return;
             const student = studentsState.find(s => s.id === id);
             if(student) {
-                if(!student.attendance) student.attendance = [];
-                student.attendance[weekIndex] = !student.attendance[weekIndex];
+                const newStatus = !student.attendance[weekIndex];
+                updateAttendance(id, weekIndex, newStatus);
                 renderAttendance();
-                updateAttendance(id, weekIndex, student.attendance[weekIndex]); 
             }
         }
 
@@ -729,6 +728,7 @@
         }
 
         // =========================================================
+        // =========================================================
         // 9. GOOGLE APPS SCRIPT WEB APP INTEGRATION INTERFACES
         // =========================================================
         const MACRO_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbym0QHXQujNGuvq4tMKnyhoch6pVRFodzjqHp5MLzL1ecdFc8gJjeY4OGWx4zxvxsf2/exec";
@@ -755,14 +755,22 @@
 
         async function updateAttendance(studentId, weekIndex, checkedValue) {
             const chosenMonth = document.getElementById('config-month').value || "June 2026";
-            const payload = { 
+            const targetDate = activeLessonDates[weekIndex]; // Grab the actual custom selected date string
+            
+            // Update app memory instantly
+            const student = studentsState.find(s => s.id === studentId);
+            if(student) {
+                if(!student.attendance) student.attendance = [];
+                student.attendance[weekIndex] = checkedValue;
+            }
+
+            executePostPayload({ 
                 action: "updateAttendance", 
                 id: studentId, 
                 month: chosenMonth, 
-                week: weekIndex, 
+                date: targetDate, 
                 status: checkedValue 
-            };
-            executePostPayload(payload);
+            });
         }
 
         async function markAsPaid(studentId, isPaid, processingDate) {
@@ -772,7 +780,7 @@
 
         async function executePostPayload(data) {
             try {
-                console.log("Sync outbound network pipeline message scheduled to run via POST mapping schemas:", data);
+                console.log("Sync outbound network pipeline message scheduled to run:", data);
                 await fetch(MACRO_ENDPOINT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
