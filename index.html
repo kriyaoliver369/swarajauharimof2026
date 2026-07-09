@@ -705,11 +705,19 @@
         async function fetchDashboardData() {
             try {
                 const response = await fetch(MACRO_ENDPOINT_URL + "?action=getDashboard");
-                const jsonPayload = await response.json();
-                // Map tracking state schemas to backend response models here
-                console.log("Apps Script pipeline fetch raw dump:", jsonPayload);
+                if (response.ok) {
+                    const jsonPayload = await response.json();
+                    studentsState = (jsonPayload && !jsonPayload.error) ? jsonPayload : [];
+                } else {
+                    studentsState = [];
+                }
+                console.log("Apps Script pipeline fetch raw dump:", studentsState);
             } catch(err) {
-                console.warn("GAS execution abstract connection layer failure (Expected simulation wrapper mode active):", err.message);
+                console.warn("GAS execution connection layer failure, using empty state fallback:", err.message);
+                studentsState = [];
+            } finally {
+                // This forces the dashboard to unfreeze and open even if your sheet is totally empty!
+                renderAllData();
             }
         }
 
