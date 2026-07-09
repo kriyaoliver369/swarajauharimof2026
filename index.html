@@ -677,8 +677,40 @@
             document.getElementById('add-student-form').reset();
         }
 
-        function triggerBulkImport(context) {
-            alert(`Bulk data parsing pipeline simulation for [${context}] completed successfully!`);
+        async function triggerBulkImport(context) {
+            if (context !== 'Attendance') {
+                alert(`Bulk data parsing pipeline simulation for [${context}] completed successfully!`);
+                return;
+            }
+            
+            const chosenMonth = document.getElementById('config-month').value || "June 2026";
+            
+            // Temporary loading indicator to give visual feedback
+            const btn = document.querySelector("button[onclick*='Attendance']");
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="w-4 h-4 animate-spin"></i> Migrating Rows...`;
+            btn.disabled = true;
+
+            try {
+                executePostPayload({
+                    action: "bulkImportAttendance",
+                    month: chosenMonth,
+                    dates: activeLessonDates.join(",")
+                });
+                
+                // Slight timeout delay to let the sheet process before refreshing the screen state
+                setTimeout(async () => {
+                    await fetchDashboardData();
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    alert(`Roster architecture migrated! Baseline vertical matrix entries generated for ${chosenMonth}.`);
+                }, 1500);
+                
+            } catch (err) {
+                console.error(err);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         }
 
         // --- ANALYTICS DATA CALCULATIONS ---
