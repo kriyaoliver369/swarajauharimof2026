@@ -523,15 +523,43 @@
                 tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-xs text-slate-500 italic">No student records loaded.</td></tr>`;
                 return;
             }
-            tbody.innerHTML = studentsState.map(student => `
-                <tr class="hover:bg-slate-700/20 transition-colors">
-                    <td class="px-6 py-4 font-medium text-slate-200">${student.name}</td>
-                    <td class="px-6 py-4 font-mono text-xs text-slate-300">${student.grade}</td>
-                    <td class="px-6 py-4">
-                        <span class="bg-purple-950/40 text-purple-400 border border-purple-500/20 text-xs px-2.5 py-0.5 rounded-full font-medium">
-                            ${student.duration || 'Active Member'}
-                        </span>
-                    </td>
+            tbody.innerHTML = studentsState.map((student, idx) => {
+                // Section badge color scheme mapping
+                let badgeClass = "bg-purple-950/40 text-purple-400 border-purple-500/20";
+                if (student.section === "Soprano") badgeClass = "bg-rose-950/40 text-rose-400 border-rose-500/20";
+                if (student.section === "Alto") badgeClass = "bg-amber-950/40 text-amber-400 border-amber-500/20";
+                if (student.section === "Tenor") badgeClass = "bg-blue-950/40 text-blue-400 border-blue-500/20";
+                if (student.section === "Bass") badgeClass = "bg-emerald-950/40 text-emerald-400 border-emerald-500/20";
+
+                return `
+                    <tr class="hover:bg-slate-700/20 transition-colors">
+                        <td class="px-6 py-4 font-medium text-slate-200">
+                            <div class="flex items-center gap-2">
+                                ${isAdmin ? `
+                                <div class="flex flex-col text-slate-500 gap-0.5">
+                                    <button onclick="moveStudentRow(${idx}, -1)" class="hover:text-amber-500 p-0.5"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
+                                    <button onclick="moveStudentRow(${idx}, 1)" class="hover:text-amber-500 p-0.5"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
+                                </div>` : ''}
+                                <span>${student.name}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 font-mono text-xs text-slate-300">${student.grade}</td>
+                        <td class="px-6 py-4">
+                            <span class="${badgeClass} border text-xs px-2.5 py-0.5 rounded-full font-medium">
+                                ${student.section || 'Soprano'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="deleteStudent('${student.id}')" ${!isAdmin ? 'disabled' : ''}
+                                class="border border-red-500/40 text-red-400 hover:bg-red-500 hover:text-white px-2.5 py-1 rounded-lg text-xs font-medium transition-all inline-flex items-center gap-1 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-red-400 disabled:cursor-not-allowed">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
                     <td class="px-6 py-4 text-right">
                         <button onclick="deleteStudent('${student.id}')" ${!isAdmin ? 'disabled' : ''}
                             class="border border-red-500/40 text-red-400 hover:bg-red-500 hover:text-white px-2.5 py-1 rounded-lg text-xs font-medium transition-all inline-flex items-center gap-1 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-red-400 disabled:cursor-not-allowed">
@@ -542,7 +570,21 @@
             `).join('');
             lucide.createIcons();
         }
-
+function moveStudentRow(index, direction) {
+            const targetIndex = index + direction;
+            // Bound safety restrictions check
+            if (targetIndex < 0 || targetIndex >= studentsState.length) return;
+            
+            // Swap array elements locally
+            const temp = studentsState[index];
+            studentsState[index] = studentsState[targetIndex];
+            studentsState[targetIndex] = temp;
+            
+            renderAllData();
+            
+            // Optional optimization notification hint
+            console.log("Local arrangement modified. Note: Persistent sheet row updates will synchronize during subsequent edits or check mutations.");
+        }
         function renderPayments() {
             const tbody = document.getElementById('payments-table-body');
             if (studentsState.length === 0) {
