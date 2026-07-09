@@ -109,32 +109,29 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 bg-slate-800 border border-slate-700/60 rounded-xl p-5 space-y-4 shadow-md">
                         <h3 class="text-sm font-semibold tracking-wider text-amber-500 uppercase flex items-center gap-2">
-                            <i data-lucide="sliders" class="w-4 h-4"></i> Week Configuration
+                            <i data-lucide="sliders" class="w-4 h-4"></i> Schedule Configuration
                         </h3>
-                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                        <div class="flex flex-wrap items-end gap-4">
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Month</label>
-                                <select class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
-                                    <option>July 2026</option>
-                                    <option>August 2026</option>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Target Month</label>
+                                <select id="config-month" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+                                    <option value="July 2026">July 2026</option>
+                                    <option value="August 2026">August 2026</option>
+                                    <option value="September 2026">September 2026</option>
                                 </select>
                             </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Week 1</label>
-                                <input type="date" value="2026-07-05" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+                            
+                            <div id="date-pickers-container" class="flex flex-wrap gap-2">
+                                <!-- Dynamic date inputs will generate here -->
                             </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Week 2</label>
-                                <input type="date" value="2026-07-12" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Week 3</label>
-                                <input type="date" value="2026-07-19" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Week 4</label>
-                                <input type="date" value="2026-07-26" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
-                            </div>
+
+                            <button onclick="addNewLessonDateInput()" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-amber-500 font-medium py-1.5 px-3 rounded-lg text-xs transition-all flex items-center gap-1">
+                                <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i> + Add Lesson Day
+                            </button>
+                            
+                            <button onclick="saveScheduleConfiguration()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-3 rounded-lg text-xs transition-all flex items-center gap-1">
+                                <i data-lucide="save" class="w-3.5 h-3.5"></i> Sync Dates
+                            </button>
                         </div>
                     </div>
                     <div class="bg-slate-800 border border-slate-700/60 rounded-xl p-5 flex flex-col justify-center items-start shadow-md">
@@ -154,12 +151,7 @@
                         <table class="w-full min-w-[600px] text-left text-sm">
                             <thead class="text-xs text-slate-400 uppercase bg-slate-900/40 border-b border-slate-700/40">
                                 <tr>
-                                    <th class="px-6 py-3.5 font-semibold">Student Name</th>
-                                    <th class="px-4 py-3.5 text-center font-semibold">W1</th>
-                                    <th class="px-4 py-3.5 text-center font-semibold">W2</th>
-                                    <th class="px-4 py-3.5 text-center font-semibold">W3</th>
-                                    <th class="px-4 py-3.5 text-center font-semibold">W4</th>
-                                    <th class="px-6 py-3.5 text-right font-semibold">Metric Matrix</th>
+                                    <!-- This row leaves header values completely empty because JavaScript will dynamically write them based on your synced dates -->
                                 </tr>
                             </thead>
                             <tbody id="attendance-table-body" class="divide-y divide-slate-700/40">
@@ -419,6 +411,8 @@
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
             
+            // Sets up dates first, then pulls student data
+            renderDatePickerInputs();
             fetchDashboardData();
             lucide.createIcons();
         }
@@ -454,32 +448,77 @@
             renderPayments();
         }
 
-        function renderAttendance() {
-            const tbody = document.getElementById('attendance-table-body');
-            tbody.innerHTML = studentsState.map((student, sIdx) => {
-                const totalCount = student.attendance.filter(Boolean).length;
-                const isPerfect = totalCount === 4;
-                const totalBadge = isPerfect 
-                    ? `<span class="bg-amber-500/10 text-amber-500 border border-amber-500/30 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">Perfect 4/4</span>`
-                    : (totalCount === 0 
-                        ? `<span class="text-red-500 font-mono font-bold">0/4</span>`
-                        : `<span class="text-amber-500 font-mono font-bold">${totalCount}/4</span>`);
+        let activeLessonDates = ["2026-07-05", "2026-07-12", "2026-07-19", "2026-07-26"];
 
+        function renderDatePickerInputs() {
+            const container = document.getElementById('date-pickers-container');
+            if(!container) return;
+            container.innerHTML = activeLessonDates.map((date, idx) => `
+                <div class="relative flex items-center bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
+                    <input type="date" value="${date}" onchange="activeLessonDates[${idx}] = this.value; renderAttendance();" class="bg-transparent text-xs text-slate-200 focus:outline-none">
+                    <button onclick="activeLessonDates.splice(${idx}, 1); renderDatePickerInputs(); renderAttendance();" class="text-rose-500 hover:text-rose-400 ml-1.5 p-0.5">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function addNewLessonDateInput() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            activeLessonDates.push(todayStr);
+            renderDatePickerInputs();
+            renderAttendance();
+        }
+
+        function saveScheduleConfiguration() {
+            const selectedMonth = document.getElementById('config-month').value;
+            executePostPayload({
+                action: "saveConfig",
+                month: selectedMonth,
+                dates: activeLessonDates.join(",")
+            });
+            alert("Schedule dates synchronized successfully.");
+        }
+
+        function renderAttendance() {
+            const theadRow = document.querySelector('#view-attendance table thead tr');
+            const tbody = document.getElementById('attendance-table-body');
+            if(!theadRow || !tbody) return;
+            
+            theadRow.innerHTML = `
+                <th class="px-6 py-3.5 font-semibold text-left">Student Name</th>
+                ${activeLessonDates.map(date => `<th class="px-2 py-3.5 text-center font-mono text-xs font-semibold">${date.substring(5)}</th>`).join('')}
+                <th class="px-6 py-3.5 text-right font-semibold">Total</th>
+            `;
+
+            if (studentsState.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${activeLessonDates.length + 2}" class="p-6 text-center text-xs text-slate-500 italic">No record data found inside sheet workspace.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = studentsState.map((student) => {
+                const totalCount = student.attendance ? student.attendance.filter(Boolean).length : 0;
                 const disabledAttr = !isAdmin ? 'disabled' : '';
 
                 return `
                     <tr class="hover:bg-slate-700/20 transition-colors">
-                        <td class="px-6 py-4 font-medium text-slate-200">${student.name}</td>
-                        ${student.attendance.map((checked, wIdx) => `
-                            <td class="px-4 py-4 text-center">
-                                <input type="checkbox" ${checked ? 'checked' : ''} ${disabledAttr}
-                                    onclick="toggleAttendanceState('${student.id}', ${wIdx})"
-                                    class="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-700 focus:ring-blue-500 focus:ring-offset-slate-800 focus:ring-2 accent-amber-500 transform scale-110 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-                            </td>
-                        `).join('')}
-                        <td class="px-6 py-4 text-right">${totalBadge}</td>
+                        <td class="px-6 py-4 font-medium text-slate-200 text-left">${student.name}</td>
+                        ${activeLessonDates.map((date, idx) => {
+                            const isChecked = student.attendance && student.attendance[idx] ? true : false;
+                            return `
+                                <td class="px-2 py-4 text-center">
+                                    <input type="checkbox" ${isChecked ? 'checked' : ''} ${disabledAttr}
+                                        onclick="toggleAttendanceState('${student.id}', ${idx})"
+                                        class="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-700 focus:ring-amber-500 accent-amber-500 transform scale-110 cursor-pointer">
+                                </td>
+                            `;
+                        }).join('')}
+                        <td class="px-6 py-4 text-right font-mono font-bold text-amber-500">${totalCount}/${activeLessonDates.length}</td>
                     </tr>
                 `;
+            }).join('');
+        }
             }).join('');
         }
 
