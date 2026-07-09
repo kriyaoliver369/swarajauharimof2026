@@ -114,7 +114,7 @@
                         <div class="flex flex-wrap items-end gap-4">
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Target Month</label>
-                                <select id="config-month" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+                                <select id="config-month" onchange="fetchDashboardData()" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
                                     <option value="June 2026">June 2026</option>
                                     <option value="July 2026">July 2026</option>
                                     <option value="August 2026">August 2026</option>
@@ -136,9 +136,14 @@
                     </div>
                     <div class="bg-slate-800 border border-slate-700/60 rounded-xl p-5 flex flex-col justify-center items-start shadow-md">
                         <p class="text-xs text-slate-400 mb-3">Sync global attendance roster sheet via external dataset pipelines.</p>
-                        <button onclick="triggerBulkImport('Attendance')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/10">
-                            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Bulk Import Attendance
-                        </button>
+                        <div class="w-full space-y-2">
+    <button onclick="triggerBulkImport('Attendance')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/10">
+        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Bulk Import Attendance
+    </button>
+    <button onclick="downloadAttendancePDF()" class="w-full bg-slate-700 hover:bg-slate-600 border border-slate-600 text-amber-500 font-medium py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-md">
+        <i data-lucide="download" class="w-4 h-4"></i> Download PDF Report
+    </button>
+</div>
                     </div>
                 </div>
 
@@ -701,24 +706,33 @@
 
         async function fetchDashboardData() {
             try {
-                const response = await fetch(MACRO_ENDPOINT_URL + "?action=getDashboard");
+                const chosenMonth = document.getElementById('config-month').value || "June 2026";
+                const response = await fetch(MACRO_ENDPOINT_URL + "?action=getDashboard&month=" + encodeURIComponent(chosenMonth));
                 if (response.ok) {
                     const jsonPayload = await response.json();
-                    studentsState = (jsonPayload && !jsonPayload.error) ? jsonPayload : [];
+                    activeLessonDates = (jsonPayload && jsonPayload.dates) ? jsonPayload.dates : ["2026-06-05","2026-06-12","2026-06-19","2026-06-26"];
+                    studentsState = (jsonPayload && jsonPayload.students) ? jsonPayload.students : [];
                 } else {
                     studentsState = [];
                 }
-                console.log("Apps Script pipeline fetch raw dump:", studentsState);
             } catch(err) {
-                console.warn("GAS execution connection layer failure, using empty state fallback:", err.message);
+                console.warn("GAS synchronization fallback active:", err.message);
                 studentsState = [];
             } finally {
+                renderDatePickerInputs();
                 renderAllData();
             }
         }
 
         async function updateAttendance(studentId, weekIndex, checkedValue) {
-            const payload = { action: "updateAttendance", id: studentId, week: weekIndex, status: checkedValue };
+            const chosenMonth = document.getElementById('config-month').value || "June 2026";
+            const payload = { 
+                action: "updateAttendance", 
+                id: studentId, 
+                month: chosenMonth, 
+                week: weekIndex, 
+                status: checkedValue 
+            };
             executePostPayload(payload);
         }
 
@@ -739,6 +753,44 @@
             } catch (err) {
                 console.error("Critical mapping synchronization pipeline failure:", err);
             }
+        }
+        function downloadAttendancePDF() {
+            const chosenMonth = document.getElementById('config-month').value;
+            const tableHtml = document.querySelector('#view-attendance table').outerHTML;
+            
+            // Create an isolated printing frame window
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Attendance Report - ${chosenMonth}</title>
+                    <style>
+                        body { font-family: 'Helvetica', Arial, sans-serif; color: #334155; padding: 40px; }
+                        .header { border-bottom: 2px solid #eab308; padding-bottom: 15px; mb-20px; }
+                        h1 { color: #0f172a; margin: 0; font-size: 24px; }
+                        p { margin: 5px 0 0 0; color: #64748b; font-size: 14px; }
+                        table { w-full: 100%; width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 12px; }
+                        th { background-color: #f1f5f9; color: #1e293b; padding: 10px; text-align: left; border-bottom: 2px solid #cbd5e1; }
+                        td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
+                        input[type="checkbox"] { transform: scale(1.2); }
+                        .text-right { text-align: right; }
+                        .text-center { text-align: center; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>Swara Jauhari Choir Attendance Report</h1>
+                        <p><strong>Roster Month:</strong> ${chosenMonth} | <strong>Entity:</strong> MOF Sabah</p>
+                    </div>
+                    ${tableHtml}
+                    <script>
+                        // Auto-execute print target dialog immediately upon window assembly
+                        window.onload = function() { window.print(); window.close(); }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
         }
     </script>
 </body>
