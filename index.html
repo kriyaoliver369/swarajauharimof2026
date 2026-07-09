@@ -177,6 +177,9 @@
                         <button onclick="triggerBulkImport('Students')" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-blue-600/5">
                             <i data-lucide="upload-cloud" class="w-4 h-4"></i> Bulk Import
                         </button>
+                        <button onclick="saveStudentOrder()" class="bg-purple-600 hover:bg-purple-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-purple-600/5">
+    <i data-lucide="save" class="w-4 h-4"></i> Save Order
+</button>
                     </div>
                 </div>
 
@@ -859,6 +862,20 @@
             `);
             printWindow.document.close();
         }
+        function saveStudentOrder() {
+    if(!isAdmin) return;
+    
+    // Grab the current IDs in their new visual order
+    const orderedIds = studentsState.map(s => s.id);
+    
+    // Send the new order to Google Sheets
+    executePostPayload({
+        action: "reorderStudents",
+        orderedIds: orderedIds
+    });
+    
+    alert("New roster order saved to database!");
+}
     </script>
 </body>
 </html>
