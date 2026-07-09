@@ -359,17 +359,27 @@
                     <div>
                         <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Vocal Grade</label>
                         <select id="modal-grade" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500">
+                            <option value="Beginner">Beginner</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="CC1">CC1</option>
+                            <option value="CC2">CC2</option>
                             <option value="CC3">CC3</option>
-                            <option value="FRC">FRC</option>
+                            <option value="CC4">CC4</option>
                             <option value="CC5">CC5</option>
+                            <option value="CC6">CC6</option>
+                            <option value="CC7">CC7</option>
+                            <option value="CC8">CC8</option>
+                            <option value="FRC">FRC</option>
+                            <option value="ARC">ARC</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Enrollment Duration</label>
-                        <select id="modal-duration" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500">
-                            <option value="1 month(s)">1 month(s)</option>
-                            <option value="4 month(s)">4 month(s)</option>
-                            <option value="12 month(s)">12 month(s)</option>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Vocal Section</label>
+                        <select id="modal-section" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500">
+                            <option value="Soprano">Soprano</option>
+                            <option value="Alto">Alto</option>
+                            <option value="Tenor">Tenor</option>
+                            <option value="Bass">Bass</option>
                         </select>
                     </div>
                 </div>
@@ -570,23 +580,31 @@
             e.preventDefault();
             const name = document.getElementById('modal-name').value;
             const grade = document.getElementById('modal-grade').value;
-            const duration = document.getElementById('modal-duration').value;
+            const section = document.getElementById('modal-section').value;
             
-            // Create a unique timestamp string ID for Google Sheets tracking
             const studentId = "s" + Date.now();
 
             const newStudent = {
                 id: studentId,
-                name, grade, duration,
+                name: name, 
+                grade: grade, 
+                section: section,
+                duration: "Active Member", // Pass a clean hardcoded tag here instead of reading an input field
                 attendance: [false, false, false, false],
-                paid: false, datePaid: ""
+                paid: false, 
+                datePaid: ""
             };
             
             studentsState.push(newStudent);
             renderAllData();
             
-            // ---> ADD THIS LINE BELOW TO SEND TO GOOGLE SHEETS backend
-            executePostPayload({ action: "addStudent", id: studentId, name: name, grade: grade, duration: duration });
+            executePostPayload({ 
+                action: "addStudent", 
+                id: studentId, 
+                name: name, 
+                grade: grade, 
+                section: section
+            });
 
             closeAddStudentModal();
             document.getElementById('add-student-form').reset();
