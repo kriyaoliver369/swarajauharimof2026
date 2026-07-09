@@ -76,7 +76,7 @@
                         </div>
                         <div>
                             <div class="text-sm font-bold tracking-wide text-slate-200">Swara Jauhari Attendance</div>
-                            <div id="user-display" class="text-xs text-slate-400 font-mono truncate max-w-[180px] sm:max-w-xs">admin@system.com</div>
+                            <div id="user-display" class="text-xs text-slate-400 font-medium truncate max-w-[180px] sm:max-w-xs">MOF Sabah</div>
                         </div>
                     </div>
                     <div>
@@ -418,11 +418,8 @@
         function initializeSession(userLabel) {
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
-            document.getElementById('user-display').innerText = userLabel;
             
-            // Automatically triggers your live data loader when the dashboard opens
             fetchDashboardData();
-            
             lucide.createIcons();
         }
 
