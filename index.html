@@ -698,13 +698,13 @@
                     dates: activeLessonDates.join(",")
                 });
                 
-                // Slight timeout delay to let the sheet process before refreshing the screen state
+                // Give Google Sheets 4 full seconds to write the data before fetching it back
                 setTimeout(async () => {
                     await fetchDashboardData();
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     alert(`Roster architecture migrated! Baseline vertical matrix entries generated for ${chosenMonth}.`);
-                }, 1500);
+                }, 4000);
                 
             } catch (err) {
                 console.error(err);
@@ -815,8 +815,8 @@
                 console.log("Sync outbound network pipeline message scheduled to run:", data);
                 await fetch(MACRO_ENDPOINT_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    // Removed mode: 'no-cors' so the network request executes normally
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Changed to text/plain to bypass browser security blocks
                     body: JSON.stringify(data)
                 });
             } catch (err) {
