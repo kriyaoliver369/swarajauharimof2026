@@ -75,9 +75,6 @@
                     <button onclick="switchTab('attendance')" id="tab-attendance" class="tab-btn px-4 py-2 text-xs font-medium rounded-lg flex items-center gap-2 transition-all whitespace-nowrap bg-amber-500 text-slate-950 font-semibold shadow-md">
                         <i data-lucide="calendar-check" class="w-4 h-4"></i> Attendance
                     </button>
-                    <button onclick="switchTab('students')" id="tab-students" class="tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap">
-                        <i data-lucide="users" class="w-4 h-4"></i> Students
-                    </button>
                 </nav>
             </div>
         </header>
@@ -112,7 +109,7 @@
                         <p class="text-xs text-slate-400 mb-3">Sync global attendance roster sheet via external dataset pipelines.</p>
                         <div class="w-full space-y-2">
                             <button onclick="triggerBulkImport('Attendance')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/10">
-                                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Bulk Check All Attendance
+                                <i data-lucide="check-square" class="w-4 h-4"></i> Bulk Check All Present
                             </button>
                         </div>
                     </div>
@@ -144,9 +141,8 @@
 
         function handleLogin(e) {
             e.preventDefault();
-            const email = document.getElementById('admin-email').value || "admin@system.com";
             isAdmin = true;
-            initializeSession(email);
+            initializeSession("admin@system.com");
         }
 
         function handleViewOnly() {
@@ -172,15 +168,6 @@
         function switchTab(targetTab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${targetTab}`).classList.remove('hidden');
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.className = "tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap";
-            });
-            const activeBtn = document.getElementById(`tab-${targetTab}`);
-            activeBtn.className = "tab-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2 transition-all whitespace-nowrap bg-amber-500 text-slate-950 font-semibold shadow-md";
-        }
-
-        function renderAllData() {
-            renderAttendance();
         }
 
         function renderDatePickerInputs() {
@@ -288,7 +275,7 @@
             const chosenMonth = document.getElementById('config-month').value || "June 2026";
             const btn = document.querySelector("button[onclick*='Attendance']");
             const originalText = btn.innerHTML;
-            btn.innerHTML = `<i class="w-4 h-4 animate-spin"></i> Generating Matrix...`;
+            btn.innerHTML = `<i class="w-4 h-4 animate-spin"></i> Checking Everyone...`;
             btn.disabled = true;
 
             try {
@@ -298,12 +285,11 @@
                     dates: activeLessonDates.join(",")
                 });
                 
-                // 4-second delay allows Google Script to cleanly commit spreadsheet values before refresh
                 setTimeout(async () => {
                     await fetchDashboardData();
                     btn.innerHTML = originalText;
                     btn.disabled = false;
-                    alert(`Roster entries generated! All students have been checkmarked Present by default for ${chosenMonth}.`);
+                    alert(`Success! Every student has been checkmarked Present for ${chosenMonth}.`);
                 }, 4000);
                 
             } catch (err) {
@@ -321,12 +307,9 @@
                     const jsonPayload = await response.json();
                     activeLessonDates = (jsonPayload && jsonPayload.dates) ? jsonPayload.dates : ["2026-06-05","2026-06-12","2026-06-19","2026-06-26"];
                     studentsState = (jsonPayload && jsonPayload.students) ? jsonPayload.students : [];
-                } else {
-                    studentsState = [];
                 }
             } catch(err) {
-                console.warn("GAS synchronization fallback active:", err.message);
-                studentsState = [];
+                console.warn("GAS Sync Fallback:", err.message);
             } finally {
                 renderDatePickerInputs();
                 renderAllData();
@@ -335,14 +318,13 @@
 
         async function executePostPayload(data) {
             try {
-                // FIXED: Setting headers to text/plain and dropping no-cors lets the payload securely clear browser security filters
                 await fetch(MACRO_ENDPOINT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(data)
                 });
             } catch (err) {
-                console.error("Pipeline synchronization failure:", err);
+                console.error("Sync failure:", err);
             }
         }
     </script>
