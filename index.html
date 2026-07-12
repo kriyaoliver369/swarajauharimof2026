@@ -262,9 +262,8 @@
         let paymentsState = [];
         let isAdmin = false;
         let activeLessonDates = ["2026-06-05", "2026-06-12", "2026-06-19", "2026-06-26"];
-        const MACRO_ENDPOINT_URL = ""; 
+        const MACRO_ENDPOINT_URL = "YOUR_WEB_APP_URL_HERE"; // <-- Don't forget to put your URL back here!
 
-        // Authorized Admins
         const AUTHORIZED_ADMINS = [
             "kriyaoliver369@gmail.com",
             "admin@system.com",
@@ -320,6 +319,33 @@
             document.getElementById(`tab-${targetTab}`).className = "tab-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2 transition-all whitespace-nowrap bg-amber-500 text-slate-950 font-semibold shadow-md";
         }
 
+        // --- STUDENT MANAGEMENT (NEW) ---
+        function deleteStudent(id) {
+            if (!isAdmin) return;
+            if (!confirm("Are you sure you want to drop this student? This will permanently delete them from the master roster.")) return;
+            
+            studentsState = studentsState.filter(s => s.id !== id);
+            renderAllData();
+            executePostPayload({ action: "deleteStudent", id: id });
+        }
+
+        function moveStudent(index, direction) {
+            if (!isAdmin) return;
+            // Prevent out-of-bounds moving
+            if (index + direction < 0 || index + direction >= studentsState.length) return;
+            
+            // Swap the students in the array
+            const temp = studentsState[index];
+            studentsState[index] = studentsState[index + direction];
+            studentsState[index + direction] = temp;
+            
+            renderAllData(); // Re-render frontend instantly
+            
+            // Send the newly ordered ID list to the backend
+            const newOrderIds = studentsState.map(s => s.id);
+            executePostPayload({ action: "reorderStudents", orderedIds: newOrderIds });
+        }
+
         // --- BULK IMPORT MODAL LOGIC ---
         let currentImportContext = "";
 
@@ -344,9 +370,7 @@
             lucide.createIcons();
         }
 
-        function closeBulkImportModal() {
-            document.getElementById('bulk-import-modal').classList.add('hidden');
-        }
+        function closeBulkImportModal() { document.getElementById('bulk-import-modal').classList.add('hidden'); }
 
         async function handleBulkImportSubmit(e) {
             e.preventDefault();
@@ -357,7 +381,6 @@
             btn.innerHTML = `<i class="w-4 h-4 animate-spin"></i> Processing...`;
             btn.disabled = true;
 
-            // Simple CSV/TSV Parser (Splits by newline, then by comma or tab)
             const rows = rawText.split('\n').map(row => row.split(/[\t,]/).map(cell => cell.trim()).filter(cell => cell !== ""));
 
             if (currentImportContext === "Students") {
@@ -372,8 +395,6 @@
                         });
                     }
                 });
-                
-                // TODO: Send array of new students to backend
                 executePostPayload({ action: "bulkImportStudents", data: rows });
                 
             } else if (currentImportContext === "Attendance") {
@@ -381,35 +402,20 @@
                     if (row.length >= 2) {
                         const name = row[0];
                         const dateString = row[1];
-                        
-                        // Find student in local state
                         const student = studentsState.find(s => s.name.toLowerCase() === name.toLowerCase());
-                        // Find date index in currently configured dates
                         const dateIndex = activeLessonDates.indexOf(dateString);
-
-                        if (student && dateIndex !== -1) {
-                            student.attendance[dateIndex] = true;
-                        }
+                        if (student && dateIndex !== -1) student.attendance[dateIndex] = true;
                     }
                 });
-
-                // TODO: Send structured array to backend to permanently checkmark these boxes
                 executePostPayload({ action: "bulkImportAttendanceData", month: document.getElementById('config-month').value, data: rows });
 
             } else if (currentImportContext === "Payments") {
                 rows.forEach(row => {
-                    if(row.length >= 2) {
-                        paymentsState.push({
-                            name: row[0],
-                            amount: row[1],
-                            date: row[2] || 'N/A'
-                        });
-                    }
+                    if(row.length >= 2) paymentsState.push({ name: row[0], amount: row[1], date: row[2] || 'N/A' });
                 });
                 executePostPayload({ action: "bulkImportPayments", data: rows });
             }
 
-            // Clean up and refresh UI
             setTimeout(() => {
                 renderAllData();
                 closeBulkImportModal();
@@ -474,14 +480,20 @@
 
         function renderStudents() {
             const tbody = document.getElementById('students-table-body');
-            tbody.innerHTML = studentsState.map(student => `
+            tbody.innerHTML = studentsState.map((student, index) => `
                 <tr class="hover:bg-slate-700/20 transition-colors">
                     <td class="px-6 py-4 font-medium text-slate-200">${student.name}</td>
                     <td class="px-6 py-4 text-slate-400">${student.grade || 'N/A'}</td>
                     <td class="px-6 py-4 text-slate-400">${student.section || 'N/A'}</td>
-                    ${isAdmin ? `<td class="px-6 py-4 text-right"><button class="text-xs text-rose-500 hover:text-rose-400 font-semibold">Drop</button></td>` : ''}
+                    ${isAdmin ? `
+                    <td class="px-6 py-4 text-right flex items-center justify-end gap-3">
+                        <button onclick="moveStudent(${index}, -1)" class="text-slate-400 hover:text-white transition-colors" title="Move Up"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
+                        <button onclick="moveStudent(${index}, 1)" class="text-slate-400 hover:text-white transition-colors" title="Move Down"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>
+                        <button onclick="deleteStudent('${student.id}')" class="text-xs bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white border border-rose-500/30 px-2 py-1 rounded transition-all font-semibold ml-2">Drop</button>
+                    </td>` : ''}
                 </tr>
             `).join('');
+            lucide.createIcons();
         }
 
         function renderPayments() {
@@ -515,13 +527,16 @@
         // --- BACKEND API COMMUNICATOR ---
         async function fetchDashboardData() {
             try {
-                // Removed API call for demo safety. Simulating data load.
-                if(studentsState.length === 0) {
-                    studentsState = [
-                        { id: "1", name: "Adrienne Tan", grade: "CC1", section: "Soprano", attendance: [true, false, false, false] },
-                        { id: "2", name: "Bob Smith", grade: "Beginner", section: "Tenor", attendance: [false, false, false, false] }
-                    ];
+                // Fetch real data from your Web App
+                const chosenMonth = document.getElementById('config-month').value || "June 2026";
+                const response = await fetch(MACRO_ENDPOINT_URL + "?action=getDashboard&month=" + encodeURIComponent(chosenMonth));
+                if (response.ok) {
+                    const jsonPayload = await response.json();
+                    activeLessonDates = (jsonPayload && jsonPayload.dates) ? jsonPayload.dates : ["2026-06-05","2026-06-12","2026-06-19","2026-06-26"];
+                    studentsState = (jsonPayload && jsonPayload.students) ? jsonPayload.students : [];
                 }
+            } catch(err) {
+                console.warn("Failed to fetch backend data", err);
             } finally {
                 renderDatePickerInputs();
                 renderAllData();
@@ -532,10 +547,9 @@
             if (!isAdmin) return;
             try {
                 data.userEmail = document.getElementById('admin-email').value.trim();
-                console.log("Sending to Google Apps Script:", data);
-                // await fetch(MACRO_ENDPOINT_URL, { method: 'POST', body: JSON.stringify(data) });
+                await fetch(MACRO_ENDPOINT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(data) });
             } catch (err) {
-                console.error(err);
+                console.error("Failed executing payload", err);
             }
         }
     </script>
