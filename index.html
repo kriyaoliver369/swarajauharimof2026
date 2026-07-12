@@ -271,6 +271,7 @@
             "management@swarajauhari.com"
         ];
 
+        // --- AUTHENTICATION & UI ---
         function handleLogin(e) {
             e.preventDefault();
             const emailInput = document.getElementById('admin-email').value.trim().toLowerCase();
@@ -313,11 +314,10 @@
             document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap");
             document.getElementById(`tab-${targetTab}`).className = "tab-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2 transition-all whitespace-nowrap bg-amber-500 text-slate-950 font-semibold shadow-md";
             
-            // Trigger Analytics Calculation when clicking the tab
             if(targetTab === 'analytics') calculateAnalyticsMetrics();
         }
 
-        // --- STUDENT MANAGEMENT ---
+        // --- STUDENT MANAGEMENT (DROP / MOVE) ---
         function deleteStudent(id) {
             if (!isAdmin) return;
             if (!confirm("Are you sure you want to drop this student?")) return;
@@ -339,7 +339,53 @@
             executePostPayload({ action: "reorderStudents", orderedIds: newOrderIds });
         }
 
-        // --- BULK IMPORT LOGIC ---
+        // --- SINGLE STUDENT ADD MODAL (NEW LOGIC) ---
+        function openAddStudentModal() {
+            if(isAdmin) document.getElementById('add-student-modal').classList.remove('hidden');
+        }
+
+        function closeAddStudentModal() {
+            document.getElementById('add-student-modal').classList.add('hidden');
+            document.getElementById('add-student-form').reset();
+        }
+
+        function handleAddStudentSubmit(e) { 
+            e.preventDefault(); 
+            
+            const name = document.getElementById('modal-name').value.trim();
+            const grade = document.getElementById('modal-grade').value;
+            const section = document.getElementById('modal-section').value;
+            
+            // Auto-generate ID based on existing max
+            let maxCounter = 0;
+            studentsState.forEach(s => {
+                const match = s.id.match(/SJ2026013108-(\d+)/);
+                if (match) {
+                    const num = parseInt(match[1], 10);
+                    if (num > maxCounter) maxCounter = num;
+                }
+            });
+            
+            const formattedId = "SJ2026013108-" + String(maxCounter + 1).padStart(2, '0');
+            
+            studentsState.push({ 
+                id: formattedId, 
+                name: name, 
+                grade: grade, 
+                section: section, 
+                attendance: new Array(activeLessonDates.length).fill(false) 
+            });
+            
+            renderAllData();
+            closeAddStudentModal();
+            
+            executePostPayload({ 
+                action: "bulkImportStudents", 
+                data: [[formattedId, name, grade, 'Active', section]] 
+            });
+        }
+
+        // --- BULK IMPORT LOGIC (NEW LOGIC) ---
         let currentImportContext = "";
 
         function openBulkImportModal(context) {
@@ -373,11 +419,29 @@
 
             if (currentImportContext === "Students") {
                 const backendRows = [];
+                
+                let maxCounter = 0;
+                studentsState.forEach(s => {
+                    const match = s.id.match(/SJ2026013108-(\d+)/);
+                    if (match) {
+                        const num = parseInt(match[1], 10);
+                        if (num > maxCounter) maxCounter = num;
+                    }
+                });
+
+                let nextCounter = maxCounter + 1;
+
                 rows.forEach(row => {
                     if(row.length >= 1) {
-                        const newId = "ID_" + Math.random().toString(36).substr(2, 9);
-                        studentsState.push({ id: newId, name: row[0], grade: row[1] || 'N/A', section: row[2] || 'N/A', attendance: new Array(activeLessonDates.length).fill(false) });
-                        backendRows.push([newId, row[0], row[1] || '', '', row[2] || '']);
+                        const formattedId = "SJ2026013108-" + String(nextCounter).padStart(2, '0');
+                        nextCounter++;
+                        
+                        studentsState.push({ 
+                            id: formattedId, name: row[0], grade: row[1] || 'N/A', 
+                            section: row[2] || 'N/A', attendance: new Array(activeLessonDates.length).fill(false) 
+                        });
+                        
+                        backendRows.push([formattedId, row[0], row[1] || 'N/A', 'Active', row[2] || 'N/A']);
                     }
                 });
                 executePostPayload({ action: "bulkImportStudents", data: backendRows });
