@@ -545,17 +545,22 @@
         }
 
         async function executePostPayload(data) {
-            if(!isAdmin) return;
-            try {
-                await fetch(MACRO_ENDPOINT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(data)
-                });
-            } catch (err) {
-                console.error(err);
-            }
-        }
+    if (!isAdmin) return;
+    
+    try {
+        // Automatically attach the admin's email to every outgoing request payload
+        const currentEmail = document.getElementById('admin-email').value.trim();
+        data.userEmail = currentEmail;
+
+        await fetch(MACRO_ENDPOINT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(data)
+        });
+    } catch (err) {
+        console.error("Payload execution failed:", err);
+    }
+}
 
         function downloadAttendancePDF() {
             if(!isAdmin) {
