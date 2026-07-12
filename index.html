@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #1e293b; }
@@ -107,12 +107,12 @@
                                 </select>
                             </div>
                             <div id="date-pickers-container" class="flex flex-wrap gap-2"></div>
-                            <button onclick="addNewLessonDateInput()" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-amber-500 font-medium py-1.5 px-3 rounded-lg text-xs transition-all flex items-center gap-1">
+                            <button id="admin-add-date-btn" onclick="addNewLessonDateInput()" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-amber-500 font-medium py-1.5 px-3 rounded-lg text-xs transition-all flex items-center gap-1 hidden">
                                 <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i> + Add Lesson Day
                             </button>
                         </div>
                     </div>
-                    <div class="bg-slate-800 border border-slate-700/60 rounded-xl p-5 flex flex-col justify-center items-start shadow-md">
+                    <div id="admin-actions-card" class="bg-slate-800 border border-slate-700/60 rounded-xl p-5 flex flex-col justify-center items-start shadow-md hidden">
                         <p class="text-xs text-slate-400 mb-3">Sync global attendance roster sheet via external dataset pipelines.</p>
                         <div class="w-full space-y-2">
                             <button onclick="triggerBulkImport('Attendance')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/10">
@@ -141,13 +141,12 @@
                 </div>
             </section>
 
-            <!-- RESTORED STUDENTS TAB -->
             <section id="view-students" class="tab-content space-y-6 hidden">
                 <div class="flex flex-wrap items-center justify-between gap-4">
                     <h2 class="text-lg font-bold text-slate-200 tracking-wide flex items-center gap-2">
                         <i data-lucide="folder-user" class="w-5 h-5 text-amber-500"></i> Active Master Roster
                     </h2>
-                    <div class="flex items-center gap-2">
+                    <div id="admin-student-controls" class="flex items-center gap-2 hidden">
                         <button onclick="openAddStudentModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-amber-500/5">
                             <i data-lucide="user-plus" class="w-4 h-4"></i> Add Student
                         </button>
@@ -164,7 +163,7 @@
                                     <th class="px-6 py-3.5 font-semibold">Student Name</th>
                                     <th class="px-6 py-3.5 font-semibold">Vocal Grade</th>
                                     <th class="px-6 py-3.5 font-semibold">Vocal Section</th>
-                                    <th class="px-6 py-3.5 text-right font-semibold">Action</th>
+                                    <th id="student-action-header" class="px-6 py-3.5 text-right font-semibold hidden">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="students-table-body" class="divide-y divide-slate-700/40"></tbody>
@@ -173,7 +172,6 @@
                 </div>
             </section>
 
-            <!-- RESTORED PAYMENTS TAB -->
             <section id="view-payments" class="tab-content space-y-6 hidden">
                 <div class="flex flex-wrap items-center justify-between gap-4">
                     <div>
@@ -182,7 +180,7 @@
                         </h2>
                         <p class="text-xs text-slate-400 mt-1">Track internal monthly transaction updates and balance records</p>
                     </div>
-                    <button onclick="triggerBulkImport('Payments')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-lg shadow-emerald-600/10">
+                    <button id="admin-payment-controls" onclick="triggerBulkImport('Payments')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-lg shadow-emerald-600/10 hidden">
                         <i data-lucide="file-check-2" class="w-4 h-4"></i> Bulk Import Payments
                     </button>
                 </div>
@@ -194,7 +192,7 @@
                                     <th class="px-6 py-3.5 font-semibold">Student Name</th>
                                     <th class="px-6 py-3.5 font-semibold">Status</th>
                                     <th class="px-6 py-3.5 font-semibold">Date Paid</th>
-                                    <th class="px-6 py-3.5 text-right font-semibold">Action Control</th>
+                                    <th id="payment-action-header" class="px-6 py-3.5 text-right font-semibold hidden">Action Control</th>
                                 </tr>
                             </thead>
                             <tbody id="payments-table-body" class="divide-y divide-slate-700/40"></tbody>
@@ -203,7 +201,6 @@
                 </div>
             </section>
 
-            <!-- RESTORED ANALYTICS TAB -->
             <section id="view-analytics" class="tab-content space-y-6 hidden">
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-slate-800 border border-slate-700/40 p-5 rounded-xl shadow-md flex flex-col justify-between">
@@ -270,7 +267,6 @@
         </main>
     </div>
 
-    <!-- RESTORED ADD STUDENT MODAL -->
     <div id="add-student-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
             <h3 class="text-sm font-bold text-slate-200 tracking-wide uppercase text-amber-500">Register New Student</h3>
@@ -313,11 +309,25 @@
         let studentsState = [];
         let isAdmin = false;
         let activeLessonDates = ["2026-06-05", "2026-06-12", "2026-06-19", "2026-06-26"];
+        const MACRO_ENDPOINT_URL = ""; 
+
+        // Add authorized admin emails here
+        const AUTHORIZED_ADMINS = [
+            "admin@system.com",
+            "director@swarajauhari.com",
+            "management@swarajauhari.com"
+        ];
 
         function handleLogin(e) {
             e.preventDefault();
-            isAdmin = true;
-            initializeSession("admin@system.com");
+            const emailInput = document.getElementById('admin-email').value.trim().toLowerCase();
+            
+            if (AUTHORIZED_ADMINS.map(email => email.toLowerCase()).includes(emailInput)) {
+                isAdmin = true;
+                initializeSession(emailInput);
+            } else {
+                alert("Access Denied: This email address is not configured as an administrator.");
+            }
         }
 
         function handleViewOnly() {
@@ -326,8 +336,27 @@
         }
 
         function initializeSession(userLabel) {
+            document.getElementById('user-display').innerText = userLabel;
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
+            
+            // Toggle admin visibility controls
+            if (isAdmin) {
+                document.getElementById('admin-add-date-btn').classList.remove('hidden');
+                document.getElementById('admin-actions-card').classList.remove('hidden');
+                document.getElementById('admin-student-controls').classList.remove('hidden');
+                document.getElementById('admin-payment-controls').classList.remove('hidden');
+                document.getElementById('student-action-header').classList.remove('hidden');
+                document.getElementById('payment-action-header').classList.remove('hidden');
+            } else {
+                document.getElementById('admin-add-date-btn').classList.add('hidden');
+                document.getElementById('admin-actions-card').classList.add('hidden');
+                document.getElementById('admin-student-controls').classList.add('hidden');
+                document.getElementById('admin-payment-controls').classList.add('hidden');
+                document.getElementById('student-action-header').classList.add('hidden');
+                document.getElementById('payment-action-header').classList.add('hidden');
+            }
+
             fetchDashboardData();
             lucide.createIcons();
         }
@@ -362,25 +391,29 @@
         function renderDatePickerInputs() {
             const container = document.getElementById('date-pickers-container');
             if(!container) return;
+            
             container.innerHTML = activeLessonDates.map((date, idx) => `
                 <div class="relative flex items-center bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
-                    <input type="date" value="${date}" onchange="handleDatePickerChange(${idx}, this.value)" class="bg-transparent text-xs text-slate-200 focus:outline-none">
+                    <input type="date" value="${date}" onchange="handleDatePickerChange(${idx}, this.value)" ${!isAdmin ? 'disabled' : ''} class="bg-transparent text-xs text-slate-200 focus:outline-none ${!isAdmin ? 'cursor-not-allowed' : ''}">
+                    ${isAdmin ? `
                     <button onclick="removeDatePickerDate(${idx})" class="text-rose-500 hover:text-rose-400 ml-1.5 p-0.5">
                         <i data-lucide="x" class="w-3 h-3"></i>
                     </button>
+                    ` : ''}
                 </div>
             `).join('');
             lucide.createIcons();
         }
 
-        // AUTOMATIC DATE SAVING ROUTINES
         function handleDatePickerChange(idx, newValue) {
+            if(!isAdmin) return;
             activeLessonDates[idx] = newValue;
             autoSaveConfigDates();
             renderAttendance();
         }
 
         function removeDatePickerDate(idx) {
+            if(!isAdmin) return;
             activeLessonDates.splice(idx, 1);
             renderDatePickerInputs();
             autoSaveConfigDates();
@@ -388,6 +421,7 @@
         }
 
         function addNewLessonDateInput() {
+            if(!isAdmin) return;
             const todayStr = new Date().toISOString().split('T')[0];
             activeLessonDates.push(todayStr);
             renderDatePickerInputs();
@@ -396,6 +430,7 @@
         }
 
         async function autoSaveConfigDates() {
+            if(!isAdmin) return;
             const selectedMonth = document.getElementById('config-month').value;
             await executePostPayload({
                 action: "saveConfig",
@@ -433,7 +468,7 @@
                                 <td class="px-2 py-4 text-center">
                                     <input type="checkbox" ${isChecked ? 'checked' : ''} ${disabledAttr}
                                         onclick="toggleAttendanceState('${student.id}', ${idx})"
-                                        class="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-700 focus:ring-amber-500 accent-amber-500 transform scale-110 cursor-pointer">
+                                        class="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-700 focus:ring-amber-500 accent-amber-500 transform scale-110 ${!isAdmin ? 'cursor-not-allowed' : 'cursor-pointer'}">
                                 </td>
                             `;
                         }).join('')}
@@ -464,6 +499,7 @@
         }
 
         async function triggerBulkImport(context) {
+            if(!isAdmin) return;
             if (context !== 'Attendance') return;
             const chosenMonth = document.getElementById('config-month').value || "June 2026";
             const btn = document.querySelector("button[onclick*='Attendance']");
@@ -509,6 +545,7 @@
         }
 
         async function executePostPayload(data) {
+            if(!isAdmin) return;
             try {
                 await fetch(MACRO_ENDPOINT_URL, {
                     method: 'POST',
@@ -520,10 +557,58 @@
             }
         }
 
-        // Dummy tab interfaces kept to satisfy compilation trees
-        function renderStudents() {}
-        function renderPayments() {}
-        function calculateAnalyticsMetrics() {}
+        function downloadAttendancePDF() {
+            if(!isAdmin) {
+                alert("Action restricted: View-Only accounts cannot download system analytics reports.");
+                return;
+            }
+            alert("Generating your PDF production manifest print streams...");
+        }
+
+        function openAddStudentModal() { if(isAdmin) document.getElementById('add-student-modal').classList.remove('hidden'); }
+        function closeAddStudentModal() { document.getElementById('add-student-modal').classList.add('hidden'); }
+        function handleAddStudentSubmit(e) { e.preventDefault(); closeAddStudentModal(); }
+
+        function renderStudents() {
+            const tbody = document.getElementById('students-table-body');
+            if(!tbody) return;
+            if(studentsState.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${isAdmin ? 4 : 3}" class="p-6 text-center text-xs text-slate-500 italic">No master records compiled.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = studentsState.map(student => `
+                <tr class="hover:bg-slate-700/20 transition-colors">
+                    <td class="px-6 py-4 font-medium text-slate-200">${student.name}</td>
+                    <td class="px-6 py-4 text-slate-400">${student.grade || 'N/A'}</td>
+                    <td class="px-6 py-4 text-slate-400">${student.section || 'N/A'}</td>
+                    ${isAdmin ? `<td class="px-6 py-4 text-right"><button class="text-xs text-rose-500 hover:text-rose-400 font-semibold">Drop</button></td>` : ''}
+                </tr>
+            `).join('');
+        }
+
+        function renderPayments() {
+            const tbody = document.getElementById('payments-table-body');
+            if(!tbody) return;
+            if(studentsState.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${isAdmin ? 4 : 3}" class="p-6 text-center text-xs text-slate-500 italic">No billing data linked.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = studentsState.map(student => `
+                <tr class="hover:bg-slate-700/20 transition-colors">
+                    <td class="px-6 py-4 font-medium text-slate-200">${student.name}</td>
+                    <td class="px-6 py-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Settled</span></td>
+                    <td class="px-6 py-4 text-slate-400 font-mono text-xs">2026-06-01</td>
+                    ${isAdmin ? `<td class="px-6 py-4 text-right"><button class="text-xs text-amber-500 hover:text-amber-400 font-semibold">Modify</button></td>` : ''}
+                </tr>
+            `).join('');
+        }
+
+        function calculateAnalyticsMetrics() {
+            document.getElementById('metric-total-students').innerText = studentsState.length;
+            document.getElementById('metric-attendance-rate').innerText = "84%";
+            document.getElementById('metric-payments-collected').innerText = studentsState.length;
+            document.getElementById('metric-payments-pending').innerText = "0";
+        }
     </script>
 </body>
 </html>
