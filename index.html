@@ -547,36 +547,29 @@
             }
         }
 
-        // --- NEW EXECUTIVE ANALYTICS CALCULATOR ---
+        // --- ADD THESE TWO VARIABLES ---
+        let globalTotalSessions = 0;
+        let globalCompletedSessions = 0;
+
+        // --- REPLACE THESE THREE FUNCTIONS ---
         function calculateAnalyticsMetrics() {
             const totalStudents = studentsState.length;
-            const totalSessions = activeLessonDates.length; // Total configured dates in the calendar
-
-            // --- SMART SESSION DETECTOR ---
-            let completedSessions = 0;
-            for (let i = 0; i < totalSessions; i++) {
-                // Scans the column: If ANY student is checked present, count the session as started
-                const sessionHasStarted = studentsState.some(student => student.attendance && student.attendance[i]);
-                if (sessionHasStarted) {
-                    completedSessions++;
-                }
-            }
+            const totalSessions = globalTotalSessions > 0 ? globalTotalSessions : activeLessonDates.length; 
+            const completedSessions = globalCompletedSessions;
 
             let totalPossibleChecks = totalStudents * totalSessions;
             let totalActualChecks = 0;
 
-            // Voice Section Aggregation Setup
             const sectionStats = {};
 
             studentsState.forEach(student => {
                 const section = (student.section || "Unassigned").toUpperCase();
-                if (!sectionStats[section]) {
-                    sectionStats[section] = { activeSingers: 0, checksEarned: 0 };
-                }
+                if (!sectionStats[section]) sectionStats[section] = { activeSingers: 0, checksEarned: 0 };
                 
                 sectionStats[section].activeSingers += 1;
 
-                const attendedCount = student.attendance ? student.attendance.filter(Boolean).length : 0;
+                // Uses the global cumulative checkmarks from the backend
+                const attendedCount = student.cumulativeChecks || 0;
                 sectionStats[section].checksEarned += attendedCount;
                 totalActualChecks += attendedCount;
             });
@@ -584,8 +577,6 @@
             // 1. Update KPI Ribbon
             const overallPerformance = totalPossibleChecks === 0 ? 0 : Math.round((totalActualChecks / totalPossibleChecks) * 1000) / 10;
             document.getElementById('kpi-diagnostic').innerText = `${overallPerformance}%`;
-            
-            // Displays dynamic metric (e.g. 5 / 9)
             document.getElementById('kpi-sessions').innerText = `${completedSessions} / ${totalSessions}`;
             
             const paidNames = paymentsState.map(p => (p.name || "").toString().toLowerCase());
@@ -611,14 +602,13 @@
                 tbody.innerHTML = rowsHTML || `<tr><td colspan="4" class="text-center py-4 text-xs text-slate-500">No data available</td></tr>`;
             }
 
-            // Update Table Footer
             document.getElementById('analytics-total-singers').innerText = totalStudents;
             document.getElementById('analytics-total-checks').innerText = totalActualChecks;
             document.getElementById('analytics-total-progress').innerText = `${overallPerformance}%`;
 
-            // 3. Individual Highlights (Sort students by attendance)
+            // 3. Individual Highlights 
             const sortedStudents = [...studentsState].map(s => {
-                return { name: s.name, count: s.attendance ? s.attendance.filter(Boolean).length : 0 };
+                return { name: s.name, count: s.cumulativeChecks || 0 };
             }).sort((a, b) => b.count - a.count);
 
             const topDiv = document.getElementById('analytics-top-performers');
@@ -629,7 +619,6 @@
                     topDiv.innerHTML = `<p class="text-xs text-slate-500">No data</p>`;
                     bottomDiv.innerHTML = `<p class="text-xs text-slate-500">No data</p>`;
                 } else {
-                    // Top 4 (Highest Attendance)
                     const topPerformers = sortedStudents.slice(0, 4);
                     topDiv.innerHTML = topPerformers.map(s => `
                         <div class="flex justify-between items-center bg-slate-900/40 px-3 py-2 rounded border border-slate-700/50">
@@ -638,7 +627,6 @@
                         </div>
                     `).join('');
 
-                    // Bottom 4 (Needs Attention)
                     const bottomPerformers = sortedStudents.slice(-4).reverse();
                     bottomDiv.innerHTML = bottomPerformers.map(s => `
                         <div class="flex justify-between items-center bg-slate-900/40 px-3 py-2 rounded border border-slate-700/50">
@@ -650,86 +638,38 @@
             }
         }
 
-        // --- RENDERING DATA ---
-        function renderAllData() {
-            renderAttendance();
-            renderStudents();
-            renderPayments();
-            calculateAnalyticsMetrics();
-        }
-
-        function renderAttendance() {
-            const theadRow = document.querySelector('#view-attendance table thead tr');
-            const tbody = document.getElementById('attendance-table-body');
-            theadRow.innerHTML = `<th class="px-6 py-3.5 font-semibold text-left">Student Name</th>` + 
-                activeLessonDates.map(date => `<th class="px-2 py-3.5 text-center font-mono text-xs font-semibold">${date.substring(5)}</th>`).join('') +
-                `<th class="px-6 py-3.5 text-right font-semibold">Total</th>`;
-            tbody.innerHTML = studentsState.map((student) => {
-                const totalCount = student.attendance ? student.attendance.filter(Boolean).length : 0;
-                return `
-                    <tr class="hover:bg-slate-700/20 transition-colors">
-                        <td class="px-6 py-4 font-medium text-slate-200 text-left">${student.name || "Unknown"}</td>
-                        ${activeLessonDates.map((date, idx) => {
-                            const isChecked = student.attendance && student.attendance[idx] ? true : false;
-                            return `<td class="px-2 py-4 text-center">
-                                    <input type="checkbox" ${isChecked ? 'checked' : ''} ${!isAdmin ? 'disabled' : ''}
-                                        onclick="toggleAttendanceState('${student.id}', ${idx})"
-                                        class="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-700 focus:ring-amber-500 accent-amber-500 transform scale-110 ${!isAdmin ? 'cursor-not-allowed' : 'cursor-pointer'}">
-                                </td>`;
-                        }).join('')}
-                        <td class="px-6 py-4 text-right font-mono font-bold text-amber-500">${totalCount}/${activeLessonDates.length}</td>
-                    </tr>`;
-            }).join('');
-        }
-
-        function renderStudents() {
-            const tbody = document.getElementById('students-table-body');
-            tbody.innerHTML = studentsState.map((student, index) => `
-                <tr class="hover:bg-slate-700/20 transition-colors">
-                    <td class="px-6 py-4 font-medium text-slate-200">${student.name || "Unknown"}</td>
-                    <td class="px-6 py-4 text-slate-400">${student.grade || 'N/A'}</td>
-                    <td class="px-6 py-4 text-slate-400">${student.section || 'N/A'}</td>
-                    ${isAdmin ? `<td class="px-6 py-4 text-right flex items-center justify-end gap-3">
-                        <button onclick="moveStudent(${index}, -1)" class="text-slate-400 hover:text-white" title="Move Up"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
-                        <button onclick="moveStudent(${index}, 1)" class="text-slate-400 hover:text-white" title="Move Down"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>
-                        <button onclick="deleteStudent('${student.id}')" class="text-xs bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white border border-rose-500/30 px-2 py-1 rounded transition-all font-semibold ml-2">Drop</button>
-                    </td>` : ''}
-                </tr>`).join('');
-            lucide.createIcons();
-        }
-
-        function renderPayments() {
-            const tbody = document.getElementById('payments-table-body');
-            tbody.innerHTML = paymentsState.map(pay => `
-                <tr class="hover:bg-slate-700/20 transition-colors">
-                    <td class="px-6 py-4 font-medium text-slate-200">${pay.name}</td>
-                    <td class="px-6 py-4 text-emerald-400 font-mono">${pay.amount}</td>
-                    <td class="px-6 py-4 text-slate-400 font-mono text-xs">${pay.date}</td>
-                    ${isAdmin ? `<td class="px-6 py-4 text-right"><button class="text-xs text-rose-500 hover:text-rose-400 font-semibold">Void</button></td>` : ''}
-                </tr>`).join('');
-        }
-
-        function toggleAttendanceState(id, weekIndex) {
+        async function toggleAttendanceState(id, weekIndex) {
             if(!isAdmin) return;
             const student = studentsState.find(s => s.id === id);
             if(student) {
                 student.attendance[weekIndex] = !student.attendance[weekIndex];
+                
+                // Instantly updates the cumulative math locally before sending to Google
+                student.cumulativeChecks += student.attendance[weekIndex] ? 1 : -1; 
+                
                 renderAttendance();
                 calculateAnalyticsMetrics();
-                executePostPayload({ action: "updateAttendance", id: id, month: document.getElementById('config-month').value, date: activeLessonDates[weekIndex], status: student.attendance[weekIndex] });
+                
+                executePostPayload({ 
+                    action: "updateAttendance", id: id, month: document.getElementById('config-month').value, 
+                    date: activeLessonDates[weekIndex], status: student.attendance[weekIndex] 
+                });
             }
         }
 
-        // --- BACKEND API COMMUNICATOR ---
         async function fetchDashboardData() {
             try {
                 const chosenMonth = document.getElementById('config-month').value || "June 2026";
                 const response = await fetch(MACRO_ENDPOINT_URL + "?action=getDashboard&month=" + encodeURIComponent(chosenMonth));
                 if (response.ok) {
                     const jsonPayload = await response.json();
-                    activeLessonDates = (jsonPayload && jsonPayload.dates) ? jsonPayload.dates : ["2026-06-05","2026-06-12","2026-06-19","2026-06-26"];
+                    activeLessonDates = (jsonPayload && jsonPayload.dates) ? jsonPayload.dates : [];
                     studentsState = (jsonPayload && jsonPayload.students) ? jsonPayload.students : [];
                     paymentsState = (jsonPayload && jsonPayload.payments) ? jsonPayload.payments : [];
+                    
+                    // Pulls the global totals down from the backend
+                    globalTotalSessions = jsonPayload.globalTotalSessions || activeLessonDates.length;
+                    globalCompletedSessions = jsonPayload.globalCompletedSessions || 0;
                 }
             } catch(err) {
                 console.warn("Failed to fetch backend data", err);
