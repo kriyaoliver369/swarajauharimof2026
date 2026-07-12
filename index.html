@@ -325,8 +325,10 @@
         let paymentsState = [];
         let isAdmin = false;
         let activeLessonDates = ["2026-06-05", "2026-06-12", "2026-06-19", "2026-06-26"];
+        let globalTotalSessions = 0;
+        let globalCompletedSessions = 0;
         
-        // --- INSERT YOUR WEB APP URL HERE ---
+        // Live Web App Endpoint Connected
         const MACRO_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbym0QHXQujNGuvq4tMKnyhoch6pVRFodzjqHp5MLzL1ecdFc8gJjeY4OGWx4zxvxsf2/exec"; 
 
         const AUTHORIZED_ADMINS = [
@@ -336,6 +338,7 @@
             "management@swarajauhari.com"
         ];
 
+        // --- AUTHENTICATION & UI ---
         function handleLogin(e) {
             e.preventDefault();
             const emailInput = document.getElementById('admin-email').value.trim().toLowerCase();
@@ -377,17 +380,22 @@
             document.getElementById(`view-${targetTab}`).classList.remove('hidden');
             document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap");
             document.getElementById(`tab-${targetTab}`).className = "tab-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2 transition-all whitespace-nowrap bg-amber-500 text-slate-950 font-semibold shadow-md";
+            
             if(targetTab === 'analytics') calculateAnalyticsMetrics();
         }
 
-        // --- CONFIG & DATES ---
+        // --- SCHEDULE CONFIGURATION & AUTO-SAVE ---
         function renderDatePickerInputs() {
             const container = document.getElementById('date-pickers-container');
             if(!container) return;
             container.innerHTML = activeLessonDates.map((date, idx) => `
                 <div class="relative flex items-center bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
                     <input type="date" value="${date}" onchange="handleDatePickerChange(${idx}, this.value)" ${!isAdmin ? 'disabled' : ''} class="bg-transparent text-xs text-slate-200 focus:outline-none ${!isAdmin ? 'cursor-not-allowed' : ''}">
-                    ${isAdmin ? `<button onclick="removeDatePickerDate(${idx})" class="text-rose-500 hover:text-rose-400 ml-1.5 p-0.5"><i data-lucide="x" class="w-3 h-3"></i></button>` : ''}
+                    ${isAdmin ? `
+                    <button onclick="removeDatePickerDate(${idx})" class="text-rose-500 hover:text-rose-400 ml-1.5 p-0.5" title="Remove Date">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                    ` : ''}
                 </div>
             `).join('');
             lucide.createIcons();
@@ -419,7 +427,11 @@
 
         async function autoSaveConfigDates() {
             if(!isAdmin) return;
-            executePostPayload({ action: "saveConfig", month: document.getElementById('config-month').value, dates: activeLessonDates.join(",") });
+            executePostPayload({
+                action: "saveConfig",
+                month: document.getElementById('config-month').value,
+                dates: activeLessonDates.join(",")
+            });
         }
 
         // --- STUDENT MANAGEMENT ---
@@ -434,52 +446,75 @@
         function moveStudent(index, direction) {
             if (!isAdmin) return;
             if (index + direction < 0 || index + direction >= studentsState.length) return;
+            
             const temp = studentsState[index];
             studentsState[index] = studentsState[index + direction];
             studentsState[index + direction] = temp;
+            
             renderAllData(); 
-            executePostPayload({ action: "reorderStudents", orderedIds: studentsState.map(s => s.id) });
+            const newOrderIds = studentsState.map(s => s.id);
+            executePostPayload({ action: "reorderStudents", orderedIds: newOrderIds });
         }
 
         function openAddStudentModal() { if(isAdmin) document.getElementById('add-student-modal').classList.remove('hidden'); }
-        function closeAddStudentModal() { document.getElementById('add-student-modal').classList.add('hidden'); document.getElementById('add-student-form').reset(); }
+        function closeAddStudentModal() { 
+            document.getElementById('add-student-modal').classList.add('hidden');
+            document.getElementById('add-student-form').reset();
+        }
 
         async function handleAddStudentSubmit(e) { 
             e.preventDefault(); 
+            
             const name = document.getElementById('modal-name').value.trim();
             const grade = document.getElementById('modal-grade').value;
             const section = document.getElementById('modal-section').value;
+            
             let maxCounter = 0;
             studentsState.forEach(s => {
-                if (s.id && s.id.match(/SJ2026013108-(\d+)/)) maxCounter = Math.max(maxCounter, parseInt(s.id.match(/SJ2026013108-(\d+)/)[1], 10));
+                if (s.id) {
+                    const match = s.id.match(/SJ2026013108-(\d+)/);
+                    if (match) {
+                        const num = parseInt(match[1], 10);
+                        if (num > maxCounter) maxCounter = num;
+                    }
+                }
             });
+            
             const formattedId = "SJ2026013108-" + String(maxCounter + 1).padStart(2, '0');
-            studentsState.push({ id: formattedId, name: name, grade: grade, section: section, attendance: new Array(activeLessonDates.length).fill(false) });
+            studentsState.push({ id: formattedId, name: name, grade: grade, section: section, attendance: new Array(activeLessonDates.length).fill(false), cumulativeChecks: 0 });
+            
             renderAllData();
             closeAddStudentModal();
+            
             executePostPayload({ action: "bulkImportStudents", data: [[formattedId, name, grade, 'Active', section]] });
         }
 
         // --- BULK IMPORT ---
         let currentImportContext = "";
+
         function openBulkImportModal(context) {
             if(!isAdmin) return;
             currentImportContext = context;
-            document.getElementById('bulk-modal-title').innerHTML = `<i data-lucide="upload-cloud" class="w-5 h-5 text-blue-500"></i> Bulk Import ${context}`;
+            const titleEl = document.getElementById('bulk-modal-title');
             const instEl = document.getElementById('bulk-modal-instructions');
-            if (context === "Students") instEl.innerText = "Name, Grade, Section (e.g. John Doe, Beginner, Tenor)";
-            else if (context === "Attendance") instEl.innerText = "Exact Student Name, YYYY-MM-DD";
-            else if (context === "Payments") instEl.innerText = "Name, Amount, YYYY-MM-DD";
+            
+            titleEl.innerHTML = `<i data-lucide="upload-cloud" class="w-5 h-5 text-blue-500"></i> Bulk Import ${context}`;
+            if (context === "Students") instEl.innerText = "Copy and paste from Excel. We auto-format 3 columns (Name, Grade, Section) or 5 columns (ID, Name, Grade...).";
+            else if (context === "Attendance") instEl.innerText = "John Doe, YYYY-MM-DD\nJane Smith, YYYY-MM-DD";
+            else if (context === "Payments") instEl.innerText = "John Doe, RM150, YYYY-MM-DD";
+
             document.getElementById('bulk-import-textarea').value = "";
             document.getElementById('bulk-import-modal').classList.remove('hidden');
             lucide.createIcons();
         }
+
         function closeBulkImportModal() { document.getElementById('bulk-import-modal').classList.add('hidden'); }
 
         async function handleBulkImportSubmit(e) {
             e.preventDefault();
             const rawText = document.getElementById('bulk-import-textarea').value.trim();
             if(!rawText) return;
+
             const btn = document.getElementById('bulk-submit-btn');
             btn.innerHTML = `<i class="w-4 h-4 animate-spin"></i> Processing...`;
             btn.disabled = true;
@@ -491,25 +526,45 @@
                 if (currentImportContext === "Students") {
                     const backendRows = [];
                     let maxCounter = 0;
+                    
                     studentsState.forEach(s => {
-                        if (s.id && s.id.match(/SJ2026013108-(\d+)/)) maxCounter = Math.max(maxCounter, parseInt(s.id.match(/SJ2026013108-(\d+)/)[1], 10));
+                        if (s.id) {
+                            const match = s.id.match(/SJ2026013108-(\d+)/);
+                            if (match) {
+                                const num = parseInt(match[1], 10);
+                                if (num > maxCounter) maxCounter = num;
+                            }
+                        }
                     });
+
                     let nextCounter = maxCounter + 1;
+
                     rows.forEach(row => {
                         if(row.length >= 1) {
-                            let name = row[0], grade = row[1] || 'N/A', section = row[2] || 'N/A';
+                            let name = row[0];
+                            let grade = row[1] || 'N/A';
+                            let section = row[2] || 'N/A';
+
                             if (row.length >= 4 && (row[0].toLowerCase().includes('id') || row[0].toLowerCase().startsWith('s'))) {
                                 if (row[0].toLowerCase().includes('studentid')) return; 
-                                name = row[1] || 'Unknown'; grade = row[2] || 'N/A'; section = row[4] || 'N/A';
+                                name = row[1] || 'Unknown';
+                                grade = row[2] || 'N/A';
+                                section = row[4] || 'N/A';
                             }
+
                             const formattedId = "SJ2026013108-" + String(nextCounter).padStart(2, '0');
                             nextCounter++;
-                            studentsState.push({ id: formattedId, name: name, grade: grade, section: section, attendance: new Array(activeLessonDates.length).fill(false) });
+                            
+                            studentsState.push({ id: formattedId, name: name, grade: grade, section: section, attendance: new Array(activeLessonDates.length).fill(false), cumulativeChecks: 0 });
                             backendRows.push([formattedId, name, grade, 'Active', section]);
                             rowsProcessed++;
                         }
                     });
-                    if (backendRows.length > 0) executePostPayload({ action: "bulkImportStudents", data: backendRows });
+                    
+                    if (backendRows.length > 0) {
+                        executePostPayload({ action: "bulkImportStudents", data: backendRows });
+                    }
+                    
                 } else if (currentImportContext === "Attendance") {
                     const attendanceToSave = [];
                     rows.forEach(row => {
@@ -518,12 +573,14 @@
                             const dateIndex = activeLessonDates.indexOf(row[1]);
                             if (student && dateIndex !== -1) {
                                 student.attendance[dateIndex] = true;
+                                student.cumulativeChecks = (student.cumulativeChecks || 0) + 1;
                                 attendanceToSave.push([document.getElementById('config-month').value, row[1], student.id, true]);
                                 rowsProcessed++;
                             }
                         }
                     });
                     if (attendanceToSave.length > 0) executePostPayload({ action: "bulkImportAttendanceData", data: attendanceToSave });
+
                 } else if (currentImportContext === "Payments") {
                     const paymentRows = [];
                     rows.forEach(row => {
@@ -535,10 +592,13 @@
                     });
                     if (paymentRows.length > 0) executePostPayload({ action: "bulkImportPayments", data: paymentRows });
                 }
+
                 renderAllData();
                 alert(`Successfully processed ${rowsProcessed} rows into ${currentImportContext}.`);
+
             } catch (err) {
-                alert("Error processing. Check inputs.");
+                console.error(err);
+                alert("Error parsing data layout parameters. Check input lines.");
             } finally {
                 closeBulkImportModal();
                 btn.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4"></i> Process & Import`;
@@ -547,11 +607,7 @@
             }
         }
 
-        // --- ADD THESE TWO VARIABLES ---
-        let globalTotalSessions = 0;
-        let globalCompletedSessions = 0;
-
-        // --- REPLACE THESE THREE FUNCTIONS ---
+        // --- CUMULATIVE EXECUTIVE ANALYTICS CALCULATOR ---
         function calculateAnalyticsMetrics() {
             const totalStudents = studentsState.length;
             const totalSessions = globalTotalSessions > 0 ? globalTotalSessions : activeLessonDates.length; 
@@ -568,13 +624,11 @@
                 
                 sectionStats[section].activeSingers += 1;
 
-                // Uses the global cumulative checkmarks from the backend
                 const attendedCount = student.cumulativeChecks || 0;
                 sectionStats[section].checksEarned += attendedCount;
                 totalActualChecks += attendedCount;
             });
 
-            // 1. Update KPI Ribbon
             const overallPerformance = totalPossibleChecks === 0 ? 0 : Math.round((totalActualChecks / totalPossibleChecks) * 1000) / 10;
             document.getElementById('kpi-diagnostic').innerText = `${overallPerformance}%`;
             document.getElementById('kpi-sessions').innerText = `${completedSessions} / ${totalSessions}`;
@@ -583,7 +637,6 @@
             const unpaidCount = studentsState.filter(s => !paidNames.includes((s.name || "").toString().toLowerCase())).length;
             document.getElementById('kpi-unpaid').innerText = unpaidCount;
 
-            // 2. Update Breakdown Table
             const tbody = document.getElementById('analytics-section-table');
             if (tbody) {
                 const rowsHTML = Object.keys(sectionStats).map(sec => {
@@ -606,7 +659,6 @@
             document.getElementById('analytics-total-checks').innerText = totalActualChecks;
             document.getElementById('analytics-total-progress').innerText = `${overallPerformance}%`;
 
-            // 3. Individual Highlights 
             const sortedStudents = [...studentsState].map(s => {
                 return { name: s.name, count: s.cumulativeChecks || 0 };
             }).sort((a, b) => b.count - a.count);
@@ -638,13 +690,81 @@
             }
         }
 
+        // --- INTERFACE RENDERING ENGINES ---
+        function renderAllData() {
+            renderAttendance();
+            renderStudents();
+            renderPayments();
+            calculateAnalyticsMetrics();
+        }
+
+        function renderAttendance() {
+            const theadRow = document.querySelector('#view-attendance table thead tr');
+            const tbody = document.getElementById('attendance-table-body');
+            if(!theadRow || !tbody) return;
+            
+            theadRow.innerHTML = `<th class="px-6 py-3.5 font-semibold text-left">Student Name</th>` + 
+                activeLessonDates.map(date => `<th class="px-2 py-3.5 text-center font-mono text-xs font-semibold">${date.substring(5)}</th>`).join('') +
+                `<th class="px-6 py-3.5 text-right font-semibold">Total</th>`;
+
+            tbody.innerHTML = studentsState.map((student) => {
+                const totalCount = student.attendance ? student.attendance.filter(Boolean).length : 0;
+                return `
+                    <tr class="hover:bg-slate-700/20 transition-colors">
+                        <td class="px-6 py-4 font-medium text-slate-200 text-left">${student.name || "Unknown"}</td>
+                        ${activeLessonDates.map((date, idx) => {
+                            const isChecked = student.attendance && student.attendance[idx] ? true : false;
+                            return `
+                                <td class="px-2 py-4 text-center">
+                                    <input type="checkbox" ${isChecked ? 'checked' : ''} ${!isAdmin ? 'disabled' : ''}
+                                        onclick="toggleAttendanceState('${student.id}', ${idx})"
+                                        class="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-700 focus:ring-amber-500 accent-amber-500 transform scale-110 ${!isAdmin ? 'cursor-not-allowed' : 'cursor-pointer'}">
+                                </td>
+                            `;
+                        }).join('')}
+                        <td class="px-6 py-4 text-right font-mono font-bold text-amber-500">${totalCount}/${activeLessonDates.length}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderStudents() {
+            const tbody = document.getElementById('students-table-body');
+            if(!tbody) return;
+            tbody.innerHTML = studentsState.map((student, index) => `
+                <tr class="hover:bg-slate-700/20 transition-colors">
+                    <td class="px-6 py-4 font-medium text-slate-200">${student.name || "Unknown"}</td>
+                    <td class="px-6 py-4 text-slate-400">${student.grade || 'N/A'}</td>
+                    <td class="px-6 py-4 text-slate-400">${student.section || 'N/A'}</td>
+                    ${isAdmin ? `
+                    <td class="px-6 py-4 text-right flex items-center justify-end gap-3">
+                        <button onclick="moveStudent(${index}, -1)" class="text-slate-400 hover:text-white" title="Move Up"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
+                        <button onclick="moveStudent(${index}, 1)" class="text-slate-400 hover:text-white" title="Move Down"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>
+                        <button onclick="deleteStudent('${student.id}')" class="text-xs bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white border border-rose-500/30 px-2 py-1 rounded transition-all font-semibold ml-2">Drop</button>
+                    </td>` : ''}
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function renderPayments() {
+            const tbody = document.getElementById('payments-table-body');
+            if(!tbody) return;
+            tbody.innerHTML = paymentsState.map(pay => `
+                <tr class="hover:bg-slate-700/20 transition-colors">
+                    <td class="px-6 py-4 font-medium text-slate-200">${pay.name}</td>
+                    <td class="px-6 py-4 text-emerald-400 font-mono">${pay.amount}</td>
+                    <td class="px-6 py-4 text-slate-400 font-mono text-xs">${pay.date}</td>
+                    ${isAdmin ? `<td class="px-6 py-4 text-right"><button class="text-xs text-rose-500 hover:text-rose-400 font-semibold">Void</button></td>` : ''}
+                </tr>
+            `).join('');
+        }
+
         async function toggleAttendanceState(id, weekIndex) {
             if(!isAdmin) return;
             const student = studentsState.find(s => s.id === id);
             if(student) {
                 student.attendance[weekIndex] = !student.attendance[weekIndex];
-                
-                // Instantly updates the cumulative math locally before sending to Google
                 student.cumulativeChecks += student.attendance[weekIndex] ? 1 : -1; 
                 
                 renderAttendance();
@@ -657,6 +777,7 @@
             }
         }
 
+        // --- DATAPLAY PIPELINE LOGIC ---
         async function fetchDashboardData() {
             try {
                 const chosenMonth = document.getElementById('config-month').value || "June 2026";
@@ -667,7 +788,6 @@
                     studentsState = (jsonPayload && jsonPayload.students) ? jsonPayload.students : [];
                     paymentsState = (jsonPayload && jsonPayload.payments) ? jsonPayload.payments : [];
                     
-                    // Pulls the global totals down from the backend
                     globalTotalSessions = jsonPayload.globalTotalSessions || activeLessonDates.length;
                     globalCompletedSessions = jsonPayload.globalCompletedSessions || 0;
                 }
