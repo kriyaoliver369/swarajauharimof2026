@@ -550,8 +550,19 @@
         // --- NEW EXECUTIVE ANALYTICS CALCULATOR ---
         function calculateAnalyticsMetrics() {
             const totalStudents = studentsState.length;
-            const targetSessions = activeLessonDates.length;
-            let totalPossibleChecks = totalStudents * targetSessions;
+            const totalSessions = activeLessonDates.length; // Total configured dates in the calendar
+
+            // --- SMART SESSION DETECTOR ---
+            let completedSessions = 0;
+            for (let i = 0; i < totalSessions; i++) {
+                // Scans the column: If ANY student is checked present, count the session as started
+                const sessionHasStarted = studentsState.some(student => student.attendance && student.attendance[i]);
+                if (sessionHasStarted) {
+                    completedSessions++;
+                }
+            }
+
+            let totalPossibleChecks = totalStudents * totalSessions;
             let totalActualChecks = 0;
 
             // Voice Section Aggregation Setup
@@ -573,7 +584,9 @@
             // 1. Update KPI Ribbon
             const overallPerformance = totalPossibleChecks === 0 ? 0 : Math.round((totalActualChecks / totalPossibleChecks) * 1000) / 10;
             document.getElementById('kpi-diagnostic').innerText = `${overallPerformance}%`;
-            document.getElementById('kpi-sessions').innerText = `${targetSessions} / 8`;
+            
+            // Displays dynamic metric (e.g. 5 / 9)
+            document.getElementById('kpi-sessions').innerText = `${completedSessions} / ${totalSessions}`;
             
             const paidNames = paymentsState.map(p => (p.name || "").toString().toLowerCase());
             const unpaidCount = studentsState.filter(s => !paidNames.includes((s.name || "").toString().toLowerCase())).length;
@@ -584,7 +597,7 @@
             if (tbody) {
                 const rowsHTML = Object.keys(sectionStats).map(sec => {
                     const stats = sectionStats[sec];
-                    const possible = stats.activeSingers * targetSessions;
+                    const possible = stats.activeSingers * totalSessions;
                     const progress = possible === 0 ? 0 : Math.round((stats.checksEarned / possible) * 1000) / 10;
                     return `
                         <tr class="hover:bg-slate-700/20 transition-colors">
@@ -616,21 +629,21 @@
                     topDiv.innerHTML = `<p class="text-xs text-slate-500">No data</p>`;
                     bottomDiv.innerHTML = `<p class="text-xs text-slate-500">No data</p>`;
                 } else {
-                    // Top 3 (or anyone with perfect attendance)
+                    // Top 4 (Highest Attendance)
                     const topPerformers = sortedStudents.slice(0, 4);
                     topDiv.innerHTML = topPerformers.map(s => `
                         <div class="flex justify-between items-center bg-slate-900/40 px-3 py-2 rounded border border-slate-700/50">
                             <span class="text-xs text-slate-300 truncate font-medium">${s.name || "Unknown"}</span>
-                            <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold">${s.count} / ${targetSessions}</span>
+                            <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold">${s.count} / ${totalSessions}</span>
                         </div>
                     `).join('');
 
-                    // Bottom 3 (Needs attention)
+                    // Bottom 4 (Needs Attention)
                     const bottomPerformers = sortedStudents.slice(-4).reverse();
                     bottomDiv.innerHTML = bottomPerformers.map(s => `
                         <div class="flex justify-between items-center bg-slate-900/40 px-3 py-2 rounded border border-slate-700/50">
                             <span class="text-xs text-slate-300 truncate font-medium">${s.name || "Unknown"}</span>
-                            <span class="text-[10px] bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded font-bold">${s.count} / ${targetSessions}</span>
+                            <span class="text-[10px] bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded font-bold">${s.count} / ${totalSessions}</span>
                         </div>
                     `).join('');
                 }
