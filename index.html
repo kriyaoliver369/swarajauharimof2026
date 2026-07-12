@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #1e293b; }
@@ -113,10 +113,10 @@
                         </div>
                     </div>
                     <div id="admin-actions-card" class="bg-slate-800 border border-slate-700/60 rounded-xl p-5 flex flex-col justify-center items-start shadow-md hidden">
-                        <p class="text-xs text-slate-400 mb-3">Sync global attendance roster sheet via external dataset pipelines.</p>
+                        <p class="text-xs text-slate-400 mb-3">Sync global attendance roster via text or CSV import.</p>
                         <div class="w-full space-y-2">
-                            <button onclick="triggerBulkImport('Attendance')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/10">
-                                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Bulk Check All Present
+                            <button onclick="openBulkImportModal('Attendance')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/10">
+                                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Bulk Import Attendance
                             </button>
                             <button onclick="downloadAttendancePDF()" class="w-full bg-slate-700 hover:bg-slate-600 border border-slate-600 text-amber-500 font-medium py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-md">
                                 <i data-lucide="download" class="w-4 h-4"></i> Download PDF Report
@@ -148,9 +148,9 @@
                     </h2>
                     <div id="admin-student-controls" class="flex items-center gap-2 hidden">
                         <button onclick="openAddStudentModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-amber-500/5">
-                            <i data-lucide="user-plus" class="w-4 h-4"></i> Add Student
+                            <i data-lucide="user-plus" class="w-4 h-4"></i> Add Single
                         </button>
-                        <button onclick="triggerBulkImport('Students')" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-blue-600/5">
+                        <button onclick="openBulkImportModal('Students')" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-blue-600/5">
                             <i data-lucide="upload-cloud" class="w-4 h-4"></i> Bulk Import
                         </button>
                     </div>
@@ -180,7 +180,7 @@
                         </h2>
                         <p class="text-xs text-slate-400 mt-1">Track internal monthly transaction updates and balance records</p>
                     </div>
-                    <button id="admin-payment-controls" onclick="triggerBulkImport('Payments')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-lg shadow-emerald-600/10 hidden">
+                    <button id="admin-payment-controls" onclick="openBulkImportModal('Payments')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-lg shadow-emerald-600/10 hidden">
                         <i data-lucide="file-check-2" class="w-4 h-4"></i> Bulk Import Payments
                     </button>
                 </div>
@@ -190,7 +190,7 @@
                             <thead class="text-xs text-slate-400 uppercase bg-slate-900/40 border-b border-slate-700/40">
                                 <tr>
                                     <th class="px-6 py-3.5 font-semibold">Student Name</th>
-                                    <th class="px-6 py-3.5 font-semibold">Status</th>
+                                    <th class="px-6 py-3.5 font-semibold">Amount</th>
                                     <th class="px-6 py-3.5 font-semibold">Date Paid</th>
                                     <th id="payment-action-header" class="px-6 py-3.5 text-right font-semibold hidden">Action Control</th>
                                 </tr>
@@ -209,62 +209,36 @@
                         </span>
                         <div id="metric-total-students" class="text-3xl font-extrabold text-slate-100 mt-3 text-center">0</div>
                     </div>
-                    <div class="bg-slate-800 border border-slate-700/40 p-5 rounded-xl shadow-md flex flex-col justify-between">
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                            <i data-lucide="trending-up" class="w-3.5 h-3.5 text-amber-500"></i> Attendance Rate
-                        </span>
-                        <div id="metric-attendance-rate" class="text-3xl font-extrabold text-amber-500 mt-3 text-center">0%</div>
-                    </div>
-                    <div class="bg-slate-800 border border-slate-700/40 p-5 rounded-xl shadow-md flex flex-col justify-between">
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                            <i data-lucide="banknote" class="w-3.5 h-3.5 text-emerald-500"></i> Payments Collected
-                        </span>
-                        <div id="metric-payments-collected" class="text-3xl font-extrabold text-slate-100 mt-3 text-center">0</div>
-                    </div>
-                    <div class="bg-slate-800 border border-slate-700/40 p-5 rounded-xl shadow-md flex flex-col justify-between border-l-2 border-l-rose-500">
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
-                            <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-rose-500"></i> Pending Payments
-                        </span>
-                        <div id="metric-payments-pending" class="text-3xl font-extrabold text-rose-500 mt-3 text-center">0</div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-slate-800 border border-slate-700/60 rounded-xl p-5 shadow-md flex flex-col justify-between">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Attendance Overview</h3>
-                        <div class="flex flex-col sm:flex-row items-center justify-around gap-6 py-2">
-                            <div class="relative w-36 h-36">
-                                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="#334155" stroke-width="3.8"></circle>
-                                    <circle id="donut-segment" cx="18" cy="18" r="15.915" fill="none" stroke="#eab308" stroke-width="3.8" stroke-dasharray="80 20" stroke-dashoffset="0"></circle>
-                                </svg>
-                                <div class="absolute inset-0 flex items-center justify-center flex-col">
-                                    <span id="donut-text" class="text-xl font-bold text-slate-200">80%</span>
-                                    <span class="text-[9px] uppercase tracking-wider text-slate-500">Present</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2 text-xs w-full sm:w-auto">
-                                <div class="flex items-center justify-between gap-8 bg-slate-900/40 px-3 py-2 rounded-lg border border-slate-700/30">
-                                    <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Present Split Ratio</span>
-                                    <span id="donut-legend-present" class="font-mono font-bold text-amber-500">80%</span>
-                                </div>
-                                <div class="flex items-center justify-between gap-8 bg-slate-900/40 px-3 py-2 rounded-lg border border-slate-700/30">
-                                    <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span> Absent Matrix</span>
-                                    <span id="donut-legend-absent" class="font-mono font-bold text-slate-400">20%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-slate-800 border border-slate-700/60 rounded-xl p-5 shadow-md">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Immediate Attention Required</h3>
-                        <span class="bg-rose-500 text-slate-950 font-extrabold tracking-wide text-[10px] uppercase px-2 py-0.5 rounded-full">Unpaid Students</span>
-                    </div>
-                    <div id="unpaid-glance-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
                 </div>
             </section>
         </main>
+    </div>
+
+    <div id="bulk-import-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl p-6 space-y-4 shadow-2xl">
+            <h3 id="bulk-modal-title" class="text-lg font-bold text-slate-200 tracking-wide uppercase flex items-center gap-2">
+                <i data-lucide="upload-cloud" class="w-5 h-5 text-blue-500"></i> Bulk Import
+            </h3>
+            
+            <div class="bg-slate-900/50 border border-slate-700/50 p-4 rounded-xl">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Required Format / Example:</p>
+                <code id="bulk-modal-instructions" class="text-xs text-amber-500 font-mono block whitespace-pre-wrap"></code>
+            </div>
+
+            <form id="bulk-import-form" onsubmit="handleBulkImportSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Paste CSV or Spreadsheet Data Below</label>
+                    <textarea id="bulk-import-textarea" required rows="8" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono focus:outline-none focus:border-blue-500 placeholder-slate-600" placeholder="Paste your rows here..."></textarea>
+                </div>
+                
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeBulkImportModal()" class="px-4 py-2 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 transition-colors">Cancel</button>
+                    <button type="submit" id="bulk-submit-btn" class="px-4 py-2 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1.5">
+                        <i data-lucide="check-circle-2" class="w-4 h-4"></i> Process & Import
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div id="add-student-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
@@ -275,31 +249,9 @@
                     <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Full Name</label>
                     <input id="modal-name" type="text" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500" placeholder="e.g. Adrienne Tan">
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Vocal Grade</label>
-                        <select id="modal-grade" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500">
-                            <option value="Beginner">Beginner</option>
-                            <option value="Intermediate">Intermediate</option>
-                            <option value="CC1">CC1</option>
-                            <option value="CC2">CC2</option>
-                            <option value="CC3">CC3</option>
-                            <option value="CC4">CC4</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Vocal Section</label>
-                        <select id="modal-section" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500">
-                            <option value="Soprano">Soprano</option>
-                            <option value="Alto">Alto</option>
-                            <option value="Tenor">Tenor</option>
-                            <option value="Bass">Bass</option>
-                        </select>
-                    </div>
-                </div>
                 <div class="flex items-center justify-end gap-2 pt-2">
                     <button type="button" onclick="closeAddStudentModal()" class="px-4 py-2 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 transition-colors">Cancel</button>
-                    <button type="submit" class="px-4 py-2 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 hover:bg-amber-600 transition-colors">Save Enrollee</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 hover:bg-amber-600 transition-colors">Save</button>
                 </div>
             </form>
         </div>
@@ -307,16 +259,20 @@
 
     <script>
         let studentsState = [];
+        let paymentsState = [];
         let isAdmin = false;
         let activeLessonDates = ["2026-06-05", "2026-06-12", "2026-06-19", "2026-06-26"];
         const MACRO_ENDPOINT_URL = ""; 
 
-        // Add authorized admin emails here
+        // Authorized Admins
         const AUTHORIZED_ADMINS = [
             "kriyaoliver369@gmail.com",
-            "oongisvoce@gmail.com",
+            "admin@system.com",
+            "director@swarajauhari.com",
+            "management@swarajauhari.com"
         ];
 
+        // --- AUTHENTICATION & UI ---
         function handleLogin(e) {
             e.preventDefault();
             const emailInput = document.getElementById('admin-email').value.trim().toLowerCase();
@@ -339,7 +295,6 @@
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
             
-            // Toggle admin visibility controls
             if (isAdmin) {
                 document.getElementById('admin-add-date-btn').classList.remove('hidden');
                 document.getElementById('admin-actions-card').classList.remove('hidden');
@@ -347,15 +302,7 @@
                 document.getElementById('admin-payment-controls').classList.remove('hidden');
                 document.getElementById('student-action-header').classList.remove('hidden');
                 document.getElementById('payment-action-header').classList.remove('hidden');
-            } else {
-                document.getElementById('admin-add-date-btn').classList.add('hidden');
-                document.getElementById('admin-actions-card').classList.add('hidden');
-                document.getElementById('admin-student-controls').classList.add('hidden');
-                document.getElementById('admin-payment-controls').classList.add('hidden');
-                document.getElementById('student-action-header').classList.add('hidden');
-                document.getElementById('payment-action-header').classList.add('hidden');
             }
-
             fetchDashboardData();
             lucide.createIcons();
         }
@@ -364,23 +311,116 @@
             isAdmin = false;
             document.getElementById('app-container').classList.add('hidden');
             document.getElementById('login-page').classList.remove('hidden');
-            document.getElementById('admin-email').value = "";
         }
 
         function switchTab(targetTab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${targetTab}`).classList.remove('hidden');
-
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.className = "tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap";
-            });
-
-            const activeBtn = document.getElementById(`tab-${targetTab}`);
-            activeBtn.className = "tab-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2 transition-all whitespace-nowrap bg-amber-500 text-slate-950 font-semibold shadow-md";
-            
-            if(targetTab === 'analytics') calculateAnalyticsMetrics();
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap");
+            document.getElementById(`tab-${targetTab}`).className = "tab-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2 transition-all whitespace-nowrap bg-amber-500 text-slate-950 font-semibold shadow-md";
         }
 
+        // --- BULK IMPORT MODAL LOGIC ---
+        let currentImportContext = "";
+
+        function openBulkImportModal(context) {
+            if(!isAdmin) return;
+            currentImportContext = context;
+            const titleEl = document.getElementById('bulk-modal-title');
+            const instEl = document.getElementById('bulk-modal-instructions');
+            
+            titleEl.innerHTML = `<i data-lucide="upload-cloud" class="w-5 h-5 text-blue-500"></i> Bulk Import ${context}`;
+            
+            if (context === "Students") {
+                instEl.innerText = "John Doe, Beginner, Tenor\nJane Smith, CC1, Soprano\n(Format: Name, Grade, Section)";
+            } else if (context === "Attendance") {
+                instEl.innerText = "John Doe, 2026-06-12\nJane Smith, 2026-06-19\n(Format: Exact Student Name, YYYY-MM-DD)\n*Note: Date must exactly match an active lesson day.*";
+            } else if (context === "Payments") {
+                instEl.innerText = "John Doe, RM150, 2026-06-01\nJane Smith, RM150, 2026-06-02\n(Format: Name, Amount, YYYY-MM-DD)";
+            }
+
+            document.getElementById('bulk-import-textarea').value = "";
+            document.getElementById('bulk-import-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeBulkImportModal() {
+            document.getElementById('bulk-import-modal').classList.add('hidden');
+        }
+
+        async function handleBulkImportSubmit(e) {
+            e.preventDefault();
+            const rawText = document.getElementById('bulk-import-textarea').value.trim();
+            if(!rawText) return;
+
+            const btn = document.getElementById('bulk-submit-btn');
+            btn.innerHTML = `<i class="w-4 h-4 animate-spin"></i> Processing...`;
+            btn.disabled = true;
+
+            // Simple CSV/TSV Parser (Splits by newline, then by comma or tab)
+            const rows = rawText.split('\n').map(row => row.split(/[\t,]/).map(cell => cell.trim()).filter(cell => cell !== ""));
+
+            if (currentImportContext === "Students") {
+                rows.forEach(row => {
+                    if(row.length >= 1) {
+                        studentsState.push({
+                            id: "ID_" + Math.random().toString(36).substr(2, 9),
+                            name: row[0],
+                            grade: row[1] || 'N/A',
+                            section: row[2] || 'N/A',
+                            attendance: new Array(activeLessonDates.length).fill(false)
+                        });
+                    }
+                });
+                
+                // TODO: Send array of new students to backend
+                executePostPayload({ action: "bulkImportStudents", data: rows });
+                
+            } else if (currentImportContext === "Attendance") {
+                rows.forEach(row => {
+                    if (row.length >= 2) {
+                        const name = row[0];
+                        const dateString = row[1];
+                        
+                        // Find student in local state
+                        const student = studentsState.find(s => s.name.toLowerCase() === name.toLowerCase());
+                        // Find date index in currently configured dates
+                        const dateIndex = activeLessonDates.indexOf(dateString);
+
+                        if (student && dateIndex !== -1) {
+                            student.attendance[dateIndex] = true;
+                        }
+                    }
+                });
+
+                // TODO: Send structured array to backend to permanently checkmark these boxes
+                executePostPayload({ action: "bulkImportAttendanceData", month: document.getElementById('config-month').value, data: rows });
+
+            } else if (currentImportContext === "Payments") {
+                rows.forEach(row => {
+                    if(row.length >= 2) {
+                        paymentsState.push({
+                            name: row[0],
+                            amount: row[1],
+                            date: row[2] || 'N/A'
+                        });
+                    }
+                });
+                executePostPayload({ action: "bulkImportPayments", data: rows });
+            }
+
+            // Clean up and refresh UI
+            setTimeout(() => {
+                renderAllData();
+                closeBulkImportModal();
+                btn.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4"></i> Process & Import`;
+                btn.disabled = false;
+                alert(`Successfully processed ${rows.length} rows into ${currentImportContext}.`);
+                lucide.createIcons();
+            }, 800);
+        }
+
+        // --- RENDERING DATA ---
         function renderAllData() {
             renderAttendance();
             renderStudents();
@@ -390,74 +430,29 @@
         function renderDatePickerInputs() {
             const container = document.getElementById('date-pickers-container');
             if(!container) return;
-            
             container.innerHTML = activeLessonDates.map((date, idx) => `
                 <div class="relative flex items-center bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
                     <input type="date" value="${date}" onchange="handleDatePickerChange(${idx}, this.value)" ${!isAdmin ? 'disabled' : ''} class="bg-transparent text-xs text-slate-200 focus:outline-none ${!isAdmin ? 'cursor-not-allowed' : ''}">
-                    ${isAdmin ? `
-                    <button onclick="removeDatePickerDate(${idx})" class="text-rose-500 hover:text-rose-400 ml-1.5 p-0.5">
-                        <i data-lucide="x" class="w-3 h-3"></i>
-                    </button>
-                    ` : ''}
                 </div>
             `).join('');
-            lucide.createIcons();
         }
 
         function handleDatePickerChange(idx, newValue) {
             if(!isAdmin) return;
             activeLessonDates[idx] = newValue;
-            autoSaveConfigDates();
             renderAttendance();
-        }
-
-        function removeDatePickerDate(idx) {
-            if(!isAdmin) return;
-            activeLessonDates.splice(idx, 1);
-            renderDatePickerInputs();
-            autoSaveConfigDates();
-            renderAttendance();
-        }
-
-        function addNewLessonDateInput() {
-            if(!isAdmin) return;
-            const todayStr = new Date().toISOString().split('T')[0];
-            activeLessonDates.push(todayStr);
-            renderDatePickerInputs();
-            autoSaveConfigDates();
-            renderAttendance();
-        }
-
-        async function autoSaveConfigDates() {
-            if(!isAdmin) return;
-            const selectedMonth = document.getElementById('config-month').value;
-            await executePostPayload({
-                action: "saveConfig",
-                month: selectedMonth,
-                dates: activeLessonDates.join(",")
-            });
         }
 
         function renderAttendance() {
             const theadRow = document.querySelector('#view-attendance table thead tr');
             const tbody = document.getElementById('attendance-table-body');
-            if(!theadRow || !tbody) return;
             
-            theadRow.innerHTML = `
-                <th class="px-6 py-3.5 font-semibold text-left">Student Name</th>
-                ${activeLessonDates.map(date => `<th class="px-2 py-3.5 text-center font-mono text-xs font-semibold">${date.substring(5)}</th>`).join('')}
-                <th class="px-6 py-3.5 text-right font-semibold">Total</th>
-            `;
-
-            if (studentsState.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${activeLessonDates.length + 2}" class="p-6 text-center text-xs text-slate-500 italic">No record data found inside sheet workspace.</td></tr>`;
-                return;
-            }
+            theadRow.innerHTML = `<th class="px-6 py-3.5 font-semibold text-left">Student Name</th>` + 
+                activeLessonDates.map(date => `<th class="px-2 py-3.5 text-center font-mono text-xs font-semibold">${date.substring(5)}</th>`).join('') +
+                `<th class="px-6 py-3.5 text-right font-semibold">Total</th>`;
 
             tbody.innerHTML = studentsState.map((student) => {
                 const totalCount = student.attendance ? student.attendance.filter(Boolean).length : 0;
-                const disabledAttr = !isAdmin ? 'disabled' : '';
-
                 return `
                     <tr class="hover:bg-slate-700/20 transition-colors">
                         <td class="px-6 py-4 font-medium text-slate-200 text-left">${student.name}</td>
@@ -465,7 +460,7 @@
                             const isChecked = student.attendance && student.attendance[idx] ? true : false;
                             return `
                                 <td class="px-2 py-4 text-center">
-                                    <input type="checkbox" ${isChecked ? 'checked' : ''} ${disabledAttr}
+                                    <input type="checkbox" ${isChecked ? 'checked' : ''} ${!isAdmin ? 'disabled' : ''}
                                         onclick="toggleAttendanceState('${student.id}', ${idx})"
                                         class="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-700 focus:ring-amber-500 accent-amber-500 transform scale-110 ${!isAdmin ? 'cursor-not-allowed' : 'cursor-pointer'}">
                                 </td>
@@ -477,109 +472,8 @@
             }).join('');
         }
 
-        function toggleAttendanceState(id, weekIndex) {
-            if(!isAdmin) return;
-            const student = studentsState.find(s => s.id === id);
-            if(student) {
-                const newStatus = !student.attendance[weekIndex];
-                student.attendance[weekIndex] = newStatus;
-                renderAttendance();
-                
-                const chosenMonth = document.getElementById('config-month').value || "June 2026";
-                const targetDate = activeLessonDates[weekIndex];
-                executePostPayload({ 
-                    action: "updateAttendance", 
-                    id: id, 
-                    month: chosenMonth, 
-                    date: targetDate, 
-                    status: newStatus 
-                });
-            }
-        }
-
-        async function triggerBulkImport(context) {
-            if(!isAdmin) return;
-            if (context !== 'Attendance') return;
-            const chosenMonth = document.getElementById('config-month').value || "June 2026";
-            const btn = document.querySelector("button[onclick*='Attendance']");
-            const originalText = btn.innerHTML;
-            btn.innerHTML = `<i class="w-4 h-4 animate-spin"></i> Commit updates...`;
-            btn.disabled = true;
-
-            try {
-                await executePostPayload({
-                    action: "bulkImportAttendance",
-                    month: chosenMonth,
-                    dates: activeLessonDates.join(",")
-                });
-                
-                setTimeout(async () => {
-                    await fetchDashboardData();
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    alert(`Success! Every student has been checkmarked Present for ${chosenMonth}.`);
-                }, 3500);
-            } catch (err) {
-                console.error(err);
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        }
-
-        async function fetchDashboardData() {
-            try {
-                const chosenMonth = document.getElementById('config-month').value || "June 2026";
-                const response = await fetch(MACRO_ENDPOINT_URL + "?action=getDashboard&month=" + encodeURIComponent(chosenMonth));
-                if (response.ok) {
-                    const jsonPayload = await response.json();
-                    activeLessonDates = (jsonPayload && jsonPayload.dates) ? jsonPayload.dates : ["2026-06-05","2026-06-12","2026-06-19","2026-06-26"];
-                    studentsState = (jsonPayload && jsonPayload.students) ? jsonPayload.students : [];
-                }
-            } catch(err) {
-                console.warn(err);
-            } finally {
-                renderDatePickerInputs();
-                renderAllData();
-            }
-        }
-
-        async function executePostPayload(data) {
-    if (!isAdmin) return;
-    
-    try {
-        // Automatically attach the admin's email to every outgoing request payload
-        const currentEmail = document.getElementById('admin-email').value.trim();
-        data.userEmail = currentEmail;
-
-        await fetch(MACRO_ENDPOINT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(data)
-        });
-    } catch (err) {
-        console.error("Payload execution failed:", err);
-    }
-}
-
-        function downloadAttendancePDF() {
-            if(!isAdmin) {
-                alert("Action restricted: View-Only accounts cannot download system analytics reports.");
-                return;
-            }
-            alert("Generating your PDF production manifest print streams...");
-        }
-
-        function openAddStudentModal() { if(isAdmin) document.getElementById('add-student-modal').classList.remove('hidden'); }
-        function closeAddStudentModal() { document.getElementById('add-student-modal').classList.add('hidden'); }
-        function handleAddStudentSubmit(e) { e.preventDefault(); closeAddStudentModal(); }
-
         function renderStudents() {
             const tbody = document.getElementById('students-table-body');
-            if(!tbody) return;
-            if(studentsState.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${isAdmin ? 4 : 3}" class="p-6 text-center text-xs text-slate-500 italic">No master records compiled.</td></tr>`;
-                return;
-            }
             tbody.innerHTML = studentsState.map(student => `
                 <tr class="hover:bg-slate-700/20 transition-colors">
                     <td class="px-6 py-4 font-medium text-slate-200">${student.name}</td>
@@ -592,26 +486,57 @@
 
         function renderPayments() {
             const tbody = document.getElementById('payments-table-body');
-            if(!tbody) return;
-            if(studentsState.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${isAdmin ? 4 : 3}" class="p-6 text-center text-xs text-slate-500 italic">No billing data linked.</td></tr>`;
-                return;
-            }
-            tbody.innerHTML = studentsState.map(student => `
+            tbody.innerHTML = paymentsState.map(pay => `
                 <tr class="hover:bg-slate-700/20 transition-colors">
-                    <td class="px-6 py-4 font-medium text-slate-200">${student.name}</td>
-                    <td class="px-6 py-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Settled</span></td>
-                    <td class="px-6 py-4 text-slate-400 font-mono text-xs">2026-06-01</td>
+                    <td class="px-6 py-4 font-medium text-slate-200">${pay.name}</td>
+                    <td class="px-6 py-4 text-emerald-400 font-mono">${pay.amount}</td>
+                    <td class="px-6 py-4 text-slate-400 font-mono text-xs">${pay.date}</td>
                     ${isAdmin ? `<td class="px-6 py-4 text-right"><button class="text-xs text-amber-500 hover:text-amber-400 font-semibold">Modify</button></td>` : ''}
                 </tr>
             `).join('');
         }
 
-        function calculateAnalyticsMetrics() {
-            document.getElementById('metric-total-students').innerText = studentsState.length;
-            document.getElementById('metric-attendance-rate').innerText = "84%";
-            document.getElementById('metric-payments-collected').innerText = studentsState.length;
-            document.getElementById('metric-payments-pending').innerText = "0";
+        function toggleAttendanceState(id, weekIndex) {
+            if(!isAdmin) return;
+            const student = studentsState.find(s => s.id === id);
+            if(student) {
+                student.attendance[weekIndex] = !student.attendance[weekIndex];
+                renderAttendance();
+                executePostPayload({ 
+                    action: "updateAttendance", 
+                    id: id, 
+                    month: document.getElementById('config-month').value, 
+                    date: activeLessonDates[weekIndex], 
+                    status: student.attendance[weekIndex] 
+                });
+            }
+        }
+
+        // --- BACKEND API COMMUNICATOR ---
+        async function fetchDashboardData() {
+            try {
+                // Removed API call for demo safety. Simulating data load.
+                if(studentsState.length === 0) {
+                    studentsState = [
+                        { id: "1", name: "Adrienne Tan", grade: "CC1", section: "Soprano", attendance: [true, false, false, false] },
+                        { id: "2", name: "Bob Smith", grade: "Beginner", section: "Tenor", attendance: [false, false, false, false] }
+                    ];
+                }
+            } finally {
+                renderDatePickerInputs();
+                renderAllData();
+            }
+        }
+
+        async function executePostPayload(data) {
+            if (!isAdmin) return;
+            try {
+                data.userEmail = document.getElementById('admin-email').value.trim();
+                console.log("Sending to Google Apps Script:", data);
+                // await fetch(MACRO_ENDPOINT_URL, { method: 'POST', body: JSON.stringify(data) });
+            } catch (err) {
+                console.error(err);
+            }
         }
     </script>
 </body>
