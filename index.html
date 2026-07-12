@@ -262,7 +262,7 @@
         let paymentsState = [];
         let isAdmin = false;
         let activeLessonDates = ["2026-06-05", "2026-06-12", "2026-06-19", "2026-06-26"];
-        const MACRO_ENDPOINT_URL = "YOUR_WEB_APP_URL_HERE"; // <-- Don't forget to put your URL back here!
+        const MACRO_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbym0QHXQujNGuvq4tMKnyhoch6pVRFodzjqHp5MLzL1ecdFc8gJjeY4OGWx4zxvxsf2/exec"; // <-- PUT YOUR URL HERE
 
         const AUTHORIZED_ADMINS = [
             "kriyaoliver369@gmail.com",
@@ -271,11 +271,9 @@
             "management@swarajauhari.com"
         ];
 
-        // --- AUTHENTICATION & UI ---
         function handleLogin(e) {
             e.preventDefault();
             const emailInput = document.getElementById('admin-email').value.trim().toLowerCase();
-            
             if (AUTHORIZED_ADMINS.map(email => email.toLowerCase()).includes(emailInput)) {
                 isAdmin = true;
                 initializeSession(emailInput);
@@ -284,10 +282,7 @@
             }
         }
 
-        function handleViewOnly() {
-            isAdmin = false;
-            initializeSession("Guest (View-Only Access)");
-        }
+        function handleViewOnly() { isAdmin = false; initializeSession("Guest (View-Only Access)"); }
 
         function initializeSession(userLabel) {
             document.getElementById('user-display').innerText = userLabel;
@@ -317,13 +312,15 @@
             document.getElementById(`view-${targetTab}`).classList.remove('hidden');
             document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap");
             document.getElementById(`tab-${targetTab}`).className = "tab-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2 transition-all whitespace-nowrap bg-amber-500 text-slate-950 font-semibold shadow-md";
+            
+            // Trigger Analytics Calculation when clicking the tab
+            if(targetTab === 'analytics') calculateAnalyticsMetrics();
         }
 
-        // --- STUDENT MANAGEMENT (NEW) ---
+        // --- STUDENT MANAGEMENT ---
         function deleteStudent(id) {
             if (!isAdmin) return;
-            if (!confirm("Are you sure you want to drop this student? This will permanently delete them from the master roster.")) return;
-            
+            if (!confirm("Are you sure you want to drop this student?")) return;
             studentsState = studentsState.filter(s => s.id !== id);
             renderAllData();
             executePostPayload({ action: "deleteStudent", id: id });
@@ -331,22 +328,18 @@
 
         function moveStudent(index, direction) {
             if (!isAdmin) return;
-            // Prevent out-of-bounds moving
             if (index + direction < 0 || index + direction >= studentsState.length) return;
             
-            // Swap the students in the array
             const temp = studentsState[index];
             studentsState[index] = studentsState[index + direction];
             studentsState[index + direction] = temp;
             
-            renderAllData(); // Re-render frontend instantly
-            
-            // Send the newly ordered ID list to the backend
+            renderAllData(); 
             const newOrderIds = studentsState.map(s => s.id);
             executePostPayload({ action: "reorderStudents", orderedIds: newOrderIds });
         }
 
-        // --- BULK IMPORT MODAL LOGIC ---
+        // --- BULK IMPORT LOGIC ---
         let currentImportContext = "";
 
         function openBulkImportModal(context) {
@@ -356,14 +349,9 @@
             const instEl = document.getElementById('bulk-modal-instructions');
             
             titleEl.innerHTML = `<i data-lucide="upload-cloud" class="w-5 h-5 text-blue-500"></i> Bulk Import ${context}`;
-            
-            if (context === "Students") {
-                instEl.innerText = "John Doe, Beginner, Tenor\nJane Smith, CC1, Soprano\n(Format: Name, Grade, Section)";
-            } else if (context === "Attendance") {
-                instEl.innerText = "John Doe, 2026-06-12\nJane Smith, 2026-06-19\n(Format: Exact Student Name, YYYY-MM-DD)\n*Note: Date must exactly match an active lesson day.*";
-            } else if (context === "Payments") {
-                instEl.innerText = "John Doe, RM150, 2026-06-01\nJane Smith, RM150, 2026-06-02\n(Format: Name, Amount, YYYY-MM-DD)";
-            }
+            if (context === "Students") instEl.innerText = "John Doe, Beginner, Tenor\nJane Smith, CC1, Soprano\n(Format: Name, Grade, Section)";
+            else if (context === "Attendance") instEl.innerText = "John Doe, 2026-06-12\nJane Smith, 2026-06-19\n(Format: Exact Student Name, YYYY-MM-DD)";
+            else if (context === "Payments") instEl.innerText = "John Doe, RM150, 2026-06-01\nJane Smith, RM150, 2026-06-02\n(Format: Name, Amount, YYYY-MM-DD)";
 
             document.getElementById('bulk-import-textarea').value = "";
             document.getElementById('bulk-import-modal').classList.remove('hidden');
@@ -384,36 +372,39 @@
             const rows = rawText.split('\n').map(row => row.split(/[\t,]/).map(cell => cell.trim()).filter(cell => cell !== ""));
 
             if (currentImportContext === "Students") {
+                const backendRows = [];
                 rows.forEach(row => {
                     if(row.length >= 1) {
-                        studentsState.push({
-                            id: "ID_" + Math.random().toString(36).substr(2, 9),
-                            name: row[0],
-                            grade: row[1] || 'N/A',
-                            section: row[2] || 'N/A',
-                            attendance: new Array(activeLessonDates.length).fill(false)
-                        });
+                        const newId = "ID_" + Math.random().toString(36).substr(2, 9);
+                        studentsState.push({ id: newId, name: row[0], grade: row[1] || 'N/A', section: row[2] || 'N/A', attendance: new Array(activeLessonDates.length).fill(false) });
+                        backendRows.push([newId, row[0], row[1] || '', '', row[2] || '']);
                     }
                 });
-                executePostPayload({ action: "bulkImportStudents", data: rows });
+                executePostPayload({ action: "bulkImportStudents", data: backendRows });
                 
             } else if (currentImportContext === "Attendance") {
+                const attendanceToSave = [];
                 rows.forEach(row => {
                     if (row.length >= 2) {
-                        const name = row[0];
-                        const dateString = row[1];
-                        const student = studentsState.find(s => s.name.toLowerCase() === name.toLowerCase());
-                        const dateIndex = activeLessonDates.indexOf(dateString);
-                        if (student && dateIndex !== -1) student.attendance[dateIndex] = true;
+                        const student = studentsState.find(s => s.name.toLowerCase() === row[0].toLowerCase());
+                        const dateIndex = activeLessonDates.indexOf(row[1]);
+                        if (student && dateIndex !== -1) {
+                            student.attendance[dateIndex] = true;
+                            attendanceToSave.push([document.getElementById('config-month').value, row[1], student.id, true]);
+                        }
                     }
                 });
-                executePostPayload({ action: "bulkImportAttendanceData", month: document.getElementById('config-month').value, data: rows });
+                executePostPayload({ action: "bulkImportAttendanceData", data: attendanceToSave });
 
             } else if (currentImportContext === "Payments") {
+                const paymentRows = [];
                 rows.forEach(row => {
-                    if(row.length >= 2) paymentsState.push({ name: row[0], amount: row[1], date: row[2] || 'N/A' });
+                    if(row.length >= 2) {
+                        paymentsState.push({ name: row[0], amount: row[1], date: row[2] || 'N/A' });
+                        paymentRows.push([document.getElementById('config-month').value, row[0], row[1], row[2] || '']);
+                    }
                 });
-                executePostPayload({ action: "bulkImportPayments", data: rows });
+                executePostPayload({ action: "bulkImportPayments", data: paymentRows });
             }
 
             setTimeout(() => {
@@ -426,11 +417,66 @@
             }, 800);
         }
 
+        // --- REAL ANALYTICS CALCULATOR ---
+        function calculateAnalyticsMetrics() {
+            const totalStudents = studentsState.length;
+            document.getElementById('metric-total-students').innerText = totalStudents;
+
+            let totalPossible = 0;
+            let totalPresent = 0;
+            
+            studentsState.forEach(student => {
+                if(student.attendance) {
+                    totalPossible += student.attendance.length;
+                    totalPresent += student.attendance.filter(Boolean).length;
+                }
+            });
+            
+            const attendanceRate = totalPossible === 0 ? 0 : Math.round((totalPresent / totalPossible) * 100);
+            document.getElementById('metric-attendance-rate').innerText = `${attendanceRate}%`;
+            
+            const donutSegment = document.getElementById('donut-segment');
+            if(donutSegment) donutSegment.setAttribute('stroke-dasharray', `${attendanceRate} ${100 - attendanceRate}`);
+            
+            const donutText = document.getElementById('donut-text');
+            if(donutText) donutText.innerText = `${attendanceRate}%`;
+            
+            const legendPresent = document.getElementById('donut-legend-present');
+            if(legendPresent) legendPresent.innerText = `${attendanceRate}%`;
+            
+            const legendAbsent = document.getElementById('donut-legend-absent');
+            if(legendAbsent) legendAbsent.innerText = `${100 - attendanceRate}%`;
+            
+            const totalPayments = paymentsState.length;
+            document.getElementById('metric-payments-collected').innerText = totalPayments;
+            
+            const pending = Math.max(0, totalStudents - totalPayments);
+            document.getElementById('metric-payments-pending').innerText = pending;
+            
+            const paidNames = paymentsState.map(p => p.name.toLowerCase());
+            const unpaidStudents = studentsState.filter(s => !paidNames.includes(s.name.toLowerCase()));
+            
+            const unpaidGlanceList = document.getElementById('unpaid-glance-list');
+            if(unpaidGlanceList) {
+                if (unpaidStudents.length === 0) {
+                    unpaidGlanceList.innerHTML = `<div class="col-span-full text-xs text-slate-500 italic">All active students have settled their payments for this cycle.</div>`;
+                } else {
+                    unpaidGlanceList.innerHTML = unpaidStudents.map(s => `
+                        <div class="bg-slate-900/50 border border-slate-700/50 rounded p-2 flex items-center justify-between">
+                            <span class="text-[11px] text-slate-300 font-medium truncate">${s.name}</span>
+                            <span class="text-[9px] text-rose-500 font-bold border border-rose-500/20 bg-rose-500/10 px-1.5 py-0.5 rounded">PENDING</span>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+
         // --- RENDERING DATA ---
         function renderAllData() {
             renderAttendance();
             renderStudents();
             renderPayments();
+            calculateAnalyticsMetrics();
         }
 
         function renderDatePickerInputs() {
@@ -503,7 +549,7 @@
                     <td class="px-6 py-4 font-medium text-slate-200">${pay.name}</td>
                     <td class="px-6 py-4 text-emerald-400 font-mono">${pay.amount}</td>
                     <td class="px-6 py-4 text-slate-400 font-mono text-xs">${pay.date}</td>
-                    ${isAdmin ? `<td class="px-6 py-4 text-right"><button class="text-xs text-amber-500 hover:text-amber-400 font-semibold">Modify</button></td>` : ''}
+                    ${isAdmin ? `<td class="px-6 py-4 text-right"><button class="text-xs text-rose-500 hover:text-rose-400 font-semibold">Void</button></td>` : ''}
                 </tr>
             `).join('');
         }
@@ -514,12 +560,10 @@
             if(student) {
                 student.attendance[weekIndex] = !student.attendance[weekIndex];
                 renderAttendance();
+                calculateAnalyticsMetrics();
                 executePostPayload({ 
-                    action: "updateAttendance", 
-                    id: id, 
-                    month: document.getElementById('config-month').value, 
-                    date: activeLessonDates[weekIndex], 
-                    status: student.attendance[weekIndex] 
+                    action: "updateAttendance", id: id, month: document.getElementById('config-month').value, 
+                    date: activeLessonDates[weekIndex], status: student.attendance[weekIndex] 
                 });
             }
         }
@@ -527,7 +571,6 @@
         // --- BACKEND API COMMUNICATOR ---
         async function fetchDashboardData() {
             try {
-                // Fetch real data from your Web App
                 const chosenMonth = document.getElementById('config-month').value || "June 2026";
                 const response = await fetch(MACRO_ENDPOINT_URL + "?action=getDashboard&month=" + encodeURIComponent(chosenMonth));
                 if (response.ok) {
