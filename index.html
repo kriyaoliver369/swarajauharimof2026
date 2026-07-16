@@ -214,7 +214,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
                     <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-center justify-between shadow-md">
                         <div>
-                            <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Upcoming Event</p>
+                            <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Upcoming Event Target</p>
                             <h4 class="text-sm font-semibold text-slate-200 mt-1">Pelancaran Hari Kebangsaan</h4>
                             <p class="text-xs text-slate-400">1st August 2026</p>
                         </div>
@@ -225,8 +225,8 @@
                     </div>
                     <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-center justify-between shadow-md">
                         <div>
-                            <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Upcoming Event</p>
-                            <h4 class="text-sm font-semibold text-slate-200 mt-1">Persembahan Perarakan</h4>
+                            <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Upcoming Event Target</p>
+                            <h4 class="text-sm font-semibold text-slate-200 mt-1">Persembahan Perarakan Hari Kebangsaan</h4>
                             <p class="text-xs text-slate-400">31st August 2026</p>
                         </div>
                         <div class="text-right">
@@ -272,21 +272,32 @@
                 <div class="bg-slate-800 border border-slate-700 rounded-xl shadow-md overflow-hidden">
                     <div class="bg-slate-900/60 p-4 border-b border-slate-700 flex justify-between items-center">
                         <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Overall Choir Session Progress</h3>
-                        <button onclick="addSong()" class="text-xs bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white px-2 py-1 rounded transition-all font-semibold">+ Add Song</button>
+                        <button onclick="addSong()" class="text-xs bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white px-2.5 py-1 rounded transition-all font-semibold">+ Add Song Track</button>
                     </div>
                     <div class="px-5 py-3 bg-slate-800/50 border-b border-slate-700/50">
                         <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono">
-                            <span class="font-bold text-slate-300">Legend:</span> 1 = Not fully effective | 2 = Capable | 3 = Proficient | 4 = Impressive
+                            <span class="font-bold text-slate-300">Legend Metric Matrix:</span> 1 = Not fully effective | 2 = Capable | 3 = Proficient | 4 = Impressive
                         </p>
                     </div>
                     <div id="songs-container" class="p-5 space-y-6"></div>
+                    
+                    <div class="bg-slate-900/80 p-4 border-t border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-5">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Accumulated Repertoire Marks:</span>
+                            <span id="repertoire-aggregated-raw" class="text-sm font-mono font-bold text-amber-500">0 / 0 Pts</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Scaled Total Progress:</span>
+                            <span id="repertoire-aggregated-percent" class="text-sm font-mono font-bold text-blue-400">0%</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="bg-slate-800 border border-slate-700 rounded-xl shadow-md overflow-hidden">
                     <div class="bg-slate-900/60 p-4 border-b border-slate-700">
-                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Sectional Group Progress</h3>
+                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Sectional Group Progress Ledger</h3>
                         <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono mt-2">
-                            <span class="font-bold text-slate-300">Score Scale:</span> 0-4 (Needs Work) | 5-7 (Developing) | 8-10 (Performance Ready)
+                            <span class="font-bold text-slate-300">Section Score Metric Scale:</span> 0-4 (Needs Work) | 5-7 (Developing) | 8-10 (Performance Ready)
                         </p>
                     </div>
                     <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6" id="section-comments-container"></div>
@@ -414,7 +425,7 @@
         
         let analyticsPayload = {
             songs: [
-                { id: Date.now(), title: "Song 1", scores: { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 } }
+                { id: Date.now(), title: "Song 1", scores: { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 }, comment: "" }
             ],
             sections: {
                 Soprano: { score: 0, comment: "" },
@@ -433,6 +444,7 @@
             "management@swarajauhari.com"
         ];
 
+        // --- AUTHENTICATION ENGINE ---
         function handleLogin(e) {
             e.preventDefault();
             const emailInput = document.getElementById('admin-email').value.trim().toLowerCase();
@@ -441,7 +453,7 @@
                 adminUserEmail = emailInput;
                 initializeSession(emailInput);
             } else {
-                alert("Access Denied: This email address is not configured as an administrator.");
+                alert("Access Denied: Email parameter is not explicitly whitelisted.");
             }
         }
 
@@ -484,6 +496,7 @@
             }
         }
 
+        // --- SCHEDULING INTERFACES ---
         function startCountdowns() {
             function update() {
                 const now = new Date().getTime();
@@ -500,11 +513,45 @@
             setInterval(update, 86400000); 
         }
 
+        // --- UTILITY ENGINE: COUNT WORDS & MANAGE INDICES ---
+        function getWordStats(str) {
+            if (!str) return 0;
+            return str.trim().split(/\s+/).filter(w => w.length > 0).length;
+        }
+
+        function enforceWordCap(element, limit, indicatorId, updateCallback) {
+            let text = element.value;
+            let currentCount = getWordStats(text);
+            
+            if (currentCount > limit) {
+                let tokens = text.trim().split(/\s+/);
+                element.value = tokens.slice(0, limit).join(" ");
+                currentCount = limit;
+            }
+            
+            const remaining = limit - currentCount;
+            const ind = document.getElementById(indicatorId);
+            if(ind) {
+                ind.innerText = `Remaining: ${remaining} words`;
+                if(remaining <= 10) {
+                    ind.className = "text-[10px] font-bold text-rose-400 font-mono transition-colors";
+                } else {
+                    ind.className = "text-[10px] text-slate-500 font-mono transition-colors";
+                }
+            }
+            updateCallback(element.value);
+        }
+
+        // --- NEW REBUILT DIAGNOSTIC SUITE RUNTIMES ---
         function renderAnalyticsUI() {
             const songsContainer = document.getElementById('songs-container');
-            songsContainer.innerHTML = analyticsPayload.songs.map((song, index) => `
-                <div class="p-4 bg-slate-900/40 border border-slate-700/60 rounded-xl relative">
-                    <div class="flex justify-between items-center mb-3">
+            songsContainer.innerHTML = analyticsPayload.songs.map((song, index) => {
+                const wCount = getWordStats(song.comment || "");
+                const remWords = 200 - wCount;
+
+                return `
+                <div class="p-4 bg-slate-900/40 border border-slate-700/60 rounded-xl relative space-y-4">
+                    <div class="flex justify-between items-center">
                         <input type="text" value="${song.title}" onchange="updateSongTitle(${index}, this.value)" ${!isAdmin ? 'disabled' : ''} class="bg-transparent border-b border-slate-600 focus:border-amber-500 focus:outline-none text-sm text-slate-200 font-bold w-1/2 py-1 transition-colors">
                         <div class="flex items-center gap-3">
                             <span class="text-xs font-mono font-bold text-amber-500" id="song-total-${index}">${calculateSingleSongTotal(song)}/20 Pts</span>
@@ -518,27 +565,43 @@
                         ${renderScoreSelect(index, 'dynamics', 'Dynamics/Interpret', song.scores.dynamics)}
                         ${renderScoreSelect(index, 'flair', 'Performance Flair', song.scores.flair)}
                     </div>
-                </div>
-            `).join('');
+                    
+                    <div class="pt-2">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Song Performance Remarks</label>
+                            <span id="song-word-ind-${index}" class="text-[10px] text-slate-500 font-mono">Remaining: ${remWords} words</span>
+                        </div>
+                        <textarea oninput="enforceWordCap(this, 200, 'song-word-ind-${index}', (val)=>{updateSongComment(${index}, val)})" ${!isAdmin ? 'disabled' : ''} rows="3" placeholder="Enter song execution metrics and feedback details..." class="w-full bg-slate-950/50 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 text-slate-300 resize-y">${song.comment || ""}</textarea>
+                    </div>
+                </div>`;
+            }).join('');
 
             const sectionContainer = document.getElementById('section-comments-container');
             const sections = ['Soprano', 'Alto', 'Tenor', 'Bass'];
             
             sectionContainer.innerHTML = sections.map(sec => {
                 const data = analyticsPayload.sections[sec] || { score: 0, comment: "" };
+                const wCount = getWordStats(data.comment || "");
+                const remWords = 300 - wCount;
+
                 return `
                 <div class="bg-slate-900/40 border border-slate-700/60 rounded-xl p-4">
                     <div class="flex justify-between items-center mb-3">
-                        <h4 class="text-sm font-bold text-slate-200">${sec}</h4>
+                        <h4 class="text-sm font-bold text-slate-200">${sec} Section</h4>
                         <div class="flex items-center gap-2">
                             <span class="text-xs text-slate-400 uppercase tracking-widest font-bold">Score</span>
                             <input type="number" min="0" max="10" value="${data.score}" onchange="updateSectionData('${sec}', 'score', this.value)" ${!isAdmin ? 'disabled' : ''} class="w-16 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center text-sm font-bold text-amber-500 focus:outline-none focus:border-blue-500">
                             <span class="text-xs text-slate-500">/ 10</span>
                         </div>
                     </div>
-                    <textarea onchange="updateSectionData('${sec}', 'comment', this.value)" ${!isAdmin ? 'disabled' : ''} rows="3" placeholder="Coach remarks for ${sec} section..." class="w-full bg-slate-950/50 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500 text-slate-300 resize-none">${data.comment}</textarea>
-                </div>
-                `;
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between items-center">
+                            <label class="text-[9px] uppercase font-bold tracking-widest text-slate-500">Sectional Rehearsal Logs</label>
+                            <span id="voice-word-ind-${sec}" class="text-[10px] text-slate-500 font-mono">Remaining: ${remWords} words</span>
+                        </div>
+                        <textarea oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; enforceWordCap(this, 300, 'voice-word-ind-${sec}', (val)=>{updateSectionData('${sec}', 'comment', val)})" ${!isAdmin ? 'disabled' : ''} style="height: auto;" placeholder="Provide target vocal placement adjustments for ${sec} choristers..." class="w-full bg-slate-950/50 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500 text-slate-300 min-h-[140px] overflow-hidden">${data.comment || ""}</textarea>
+                    </div>
+                </div>`;
             }).join('');
             
             lucide.createIcons();
@@ -563,20 +626,27 @@
         }
 
         function calculateRepertoireMastery() {
-            if (analyticsPayload.songs.length === 0) {
+            const totalSongs = analyticsPayload.songs.length;
+            if (totalSongs === 0) {
                 document.getElementById('kpi-repertoire').innerText = "0%";
+                document.getElementById('repertoire-aggregated-raw').innerText = "0 / 0 Pts";
+                document.getElementById('repertoire-aggregated-percent').innerText = "0%";
                 return;
             }
             let totalPoints = 0;
-            const maxPoints = analyticsPayload.songs.length * 20;
+            const maxPoints = totalSongs * 20;
             analyticsPayload.songs.forEach(song => { totalPoints += calculateSingleSongTotal(song); });
             const percentage = Math.round((totalPoints / maxPoints) * 100);
+            
+            // Sync all summary labels natively
             document.getElementById('kpi-repertoire').innerText = `${percentage}%`;
+            document.getElementById('repertoire-aggregated-raw').innerText = `${totalPoints} / ${maxPoints} Pts`;
+            document.getElementById('repertoire-aggregated-percent').innerText = `${percentage}%`;
         }
 
         function addSong() {
             if(!isAdmin) return;
-            analyticsPayload.songs.push({ id: Date.now(), title: "New Song", scores: { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 } });
+            analyticsPayload.songs.push({ id: Date.now(), title: "New Repertoire Title", scores: { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 }, comment: "" });
             renderAnalyticsUI();
         }
 
@@ -589,6 +659,7 @@
         }
 
         function updateSongTitle(index, val) { analyticsPayload.songs[index].title = val; }
+        function updateSongComment(index, val) { analyticsPayload.songs[index].comment = val; }
         function updateSongScore(index, metric, val) { 
             analyticsPayload.songs[index].scores[metric] = parseInt(val); 
             document.getElementById(`song-total-${index}`).innerText = `${calculateSingleSongTotal(analyticsPayload.songs[index])}/20 Pts`;
@@ -600,7 +671,7 @@
             if(!isAdmin) return;
             const btn = document.querySelector("button[onclick='saveAnalyticsToHistory()']");
             const ogText = btn.innerHTML;
-            btn.innerHTML = `<i class="w-4 h-4 animate-spin"></i> Saving...`;
+            btn.innerHTML = `<i class="w-4 h-4 animate-spin"></i> Committing Logs...`;
             
             executePostPayload({
                 action: "saveAnalytics",
@@ -610,62 +681,11 @@
             
             setTimeout(() => {
                 btn.innerHTML = ogText;
-                alert("Digital Signature Applied. Snapshot securely appended to Google Sheets history logs.");
+                alert("Digital Signature Confirmed. Repertoire matrix snapshot securely saved to Google Sheets registry.");
             }, 1000);
         }
 
-        function downloadPDF(tabId, reportTitle) {
-            const element = document.getElementById(tabId);
-            const now = new Date();
-            const timestampOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-            const formattedTime = now.toLocaleString('en-MY', timestampOptions);
-
-            const headerDiv = document.createElement('div');
-            headerDiv.className = "mb-6 pb-4 border-b border-amber-500/30 w-full";
-            headerDiv.innerHTML = `
-                <div class="flex justify-between items-end w-full">
-                    <div>
-                        <h1 class="text-2xl font-extrabold text-slate-100 uppercase tracking-widest">Swara Jauhari MOF</h1>
-                        <h2 class="text-lg font-semibold text-amber-500 mt-1">${reportTitle}</h2>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Document Generated</p>
-                        <p class="text-xs text-slate-200 font-mono mt-1">${formattedTime}</p>
-                    </div>
-                </div>
-            `;
-            element.insertBefore(headerDiv, element.firstChild);
-
-            const uiElements = element.querySelectorAll('button, select, input[type="date"]');
-            const hiddenStates = [];
-            uiElements.forEach(el => {
-                hiddenStates.push({ element: el, display: el.style.display });
-                el.style.display = 'none'; 
-            });
-
-            if (isAdmin) {
-                const actionHeaders = element.querySelectorAll('#student-action-header, #payment-action-header');
-                actionHeaders.forEach(th => {
-                    hiddenStates.push({ element: th, display: th.style.display });
-                    th.style.display = 'none';
-                });
-            }
-
-            const opt = {
-                margin:       0.4,
-                filename:     `Swara_Jauhari_${reportTitle.replace(/\s+/g, '_')}_${now.getTime()}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#0f172a' },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
-            };
-
-            html2pdf().set(opt).from(element).save().then(() => {
-                headerDiv.remove(); 
-                hiddenStates.forEach(item => { item.element.style.display = item.display; });
-            });
-        }
-
-        // --- PRODUCTION CORE DATA RENDERING ENGINES ---
+        // --- PRODUCTION STABLE RENDERING PIPELINES ---
         function renderAllData() {
             renderAttendance();
             renderStudents();
@@ -799,25 +819,6 @@
                     ${isAdmin ? `<td class="px-6 py-4 text-right"><button class="text-xs text-rose-500 hover:text-rose-400 font-semibold">Void</button></td>` : ''}
                 </tr>`);
             lucide.createIcons();
-        }
-
-        function moveStudent(index, direction) {
-            if (!isAdmin) return;
-            if (index + direction < 0 || index + direction >= studentsState.length) return;
-            const temp = studentsState[index];
-            studentsState[index] = studentsState[index + direction];
-            studentsState[index + direction] = temp;
-            renderAllData(); 
-            const newOrderIds = studentsState.map(s => s.id);
-            executePostPayload({ action: "reorderStudents", orderedIds: newOrderIds });
-        }
-
-        function deleteStudent(id) {
-            if (!isAdmin) return;
-            if (!confirm("Are you sure you want to drop this student?")) return;
-            studentsState = studentsState.filter(s => s.id !== id);
-            renderAllData();
-            executePostPayload({ action: "deleteStudent", id: id });
         }
 
         function calculateAnalyticsMetrics() {
