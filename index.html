@@ -571,7 +571,7 @@
                             <label class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Song Performance Remarks</label>
                             <span id="song-word-ind-${index}" class="text-[10px] text-slate-500 font-mono">Remaining: ${remWords} words</span>
                         </div>
-                        <textarea oninput="enforceWordCap(this, 200, 'song-word-ind-${index}', (val)=>{updateSongComment(${index}, val)})" ${!isAdmin ? 'disabled' : ''} rows="3" placeholder="Enter song execution metrics and feedback details..." class="w-full bg-slate-950/50 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 text-slate-300 resize-y">${song.comment || ""}</textarea>
+                        <textarea oninput="this.style.height='auto'; this.style.height=this.scrollHeight+'px'; enforceWordCap(this, 200, 'song-word-ind-${index}', (val)=>{updateSongComment(${index}, val)})" ${!isAdmin ? 'disabled' : ''} rows="3" placeholder="Enter song execution metrics and feedback details..." class="w-full bg-slate-950/50 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 text-slate-300 resize-y">${song.comment || ""}</textarea>
                     </div>
                 </div>`;
             }).join('');
@@ -606,6 +606,12 @@
             
             lucide.createIcons();
             calculateRepertoireMastery();
+
+            // Auto-expand every analytics comment box to fit its full text (works in view-only mode too)
+            document.querySelectorAll('#songs-container textarea, #section-comments-container textarea').forEach(ta => {
+                ta.style.height = 'auto';
+                ta.style.height = ta.scrollHeight + 'px';
+            });
         }
 
         function renderScoreSelect(songIndex, metricKey, label, currentValue) {
