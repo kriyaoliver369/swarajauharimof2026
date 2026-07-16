@@ -272,15 +272,14 @@
                 <div class="bg-slate-800 border border-slate-700 rounded-xl shadow-md overflow-hidden">
                     <div class="bg-slate-900/60 p-4 border-b border-slate-700 flex justify-between items-center">
                         <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Overall Choir Session Progress</h3>
-                        <button onclick="addSong()" class="text-[10px] bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white px-2 py-1 rounded transition-all font-semibold">+ Add Song</button>
+                        <button onclick="addSong()" class="text-xs bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white px-2 py-1 rounded transition-all font-semibold">+ Add Song</button>
                     </div>
                     <div class="px-5 py-3 bg-slate-800/50 border-b border-slate-700/50">
                         <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono">
                             <span class="font-bold text-slate-300">Legend:</span> 1 = Not fully effective | 2 = Capable | 3 = Proficient | 4 = Impressive
                         </p>
                     </div>
-                    <div id="songs-container" class="p-5 space-y-6">
-                        </div>
+                    <div id="songs-container" class="p-5 space-y-6"></div>
                 </div>
 
                 <div class="bg-slate-800 border border-slate-700 rounded-xl shadow-md overflow-hidden">
@@ -290,8 +289,7 @@
                             <span class="font-bold text-slate-300">Score Scale:</span> 0-4 (Needs Work) | 5-7 (Developing) | 8-10 (Performance Ready)
                         </p>
                     </div>
-                    <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6" id="section-comments-container">
-                        </div>
+                    <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6" id="section-comments-container"></div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -414,7 +412,6 @@
         let globalCompletedSessions = 0;
         let adminUserEmail = "";
         
-        // NEW ANALYTICS STATE OBJECT
         let analyticsPayload = {
             songs: [
                 { id: Date.now(), title: "Song 1", scores: { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 } }
@@ -487,7 +484,6 @@
             }
         }
 
-        // --- NEW EVENT COUNTDOWNS ---
         function startCountdowns() {
             function update() {
                 const now = new Date().getTime();
@@ -504,7 +500,6 @@
             setInterval(update, 86400000); 
         }
 
-        // --- NEW EXECUTIVE ANALYTICS ENGINE ---
         function renderAnalyticsUI() {
             const songsContainer = document.getElementById('songs-container');
             songsContainer.innerHTML = analyticsPayload.songs.map((song, index) => `
@@ -670,12 +665,57 @@
             });
         }
 
-        // --- RENDER ENGINES ---
+        // --- PRODUCTION CORE DATA RENDERING ENGINES ---
         function renderAllData() {
             renderAttendance();
             renderStudents();
             renderPayments();
             calculateAnalyticsMetrics();
+        }
+
+        function renderDatePickerInputs() {
+            const container = document.getElementById('date-pickers-container');
+            if(!container) return;
+            container.innerHTML = activeLessonDates.map((date, idx) => `
+                <div class="relative flex items-center bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
+                    <input type="date" value="${date}" onchange="handleDatePickerChange(${idx}, this.value)" ${!isAdmin ? 'disabled' : ''} class="bg-transparent text-xs text-slate-200 focus:outline-none ${!isAdmin ? 'cursor-not-allowed' : ''}">
+                    ${isAdmin ? `<button onclick="removeDatePickerDate(${idx})" class="text-rose-500 hover:text-rose-400 ml-1.5 p-0.5" title="Remove Date"><i data-lucide="x" class="w-3 h-3"></i></button>` : ''}
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function handleDatePickerChange(idx, newValue) {
+            if(!isAdmin) return;
+            activeLessonDates[idx] = newValue;
+            renderAttendance();
+            autoSaveConfigDates(); 
+        }
+
+        function removeDatePickerDate(idx) {
+            if(!isAdmin) return;
+            activeLessonDates.splice(idx, 1);
+            renderDatePickerInputs();
+            renderAttendance();
+            autoSaveConfigDates(); 
+        }
+
+        function addNewLessonDateInput() {
+            if(!isAdmin) return;
+            const todayStr = new Date().toISOString().split('T')[0];
+            activeLessonDates.push(todayStr);
+            renderDatePickerInputs();
+            renderAttendance();
+            autoSaveConfigDates(); 
+        }
+
+        async function autoSaveConfigDates() {
+            if(!isAdmin) return;
+            executePostPayload({
+                action: "saveConfig",
+                month: document.getElementById('config-month').value,
+                dates: activeLessonDates.join(",")
+            });
         }
 
         function renderAttendance() {
@@ -718,7 +758,7 @@
             const tbody = document.getElementById('students-table-body');
             if(!tbody) return;
             if (studentsState.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-xs text-slate-500 italic">No student records loaded.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-xs text-slate-500 italic">No student student rosters synchronized.</td></tr>`;
                 return;
             }
             tbody.innerHTML = studentsState.map((student, index) => {
@@ -747,24 +787,20 @@
         function renderPayments() {
             const tbody = document.getElementById('payments-table-body');
             if(!tbody) return;
-            if (studentsState.length === 0) {
+            if (paymentsState.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-xs text-slate-500 italic">No ledger rows found.</td></tr>`;
                 return;
             }
-            tbody.innerHTML = paymentsState.map(pay => {
-                const statusBadge = `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs px-2 py-0.5 rounded-md font-medium inline-flex items-center gap-1"><i data-lucide="check-circle" class="w-3 h-3"></i> Paid</span>`;
-                return `
+            tbody.innerHTML = paymentsState.map(pay => `
                 <tr class="hover:bg-slate-700/20 transition-colors">
                     <td class="px-6 py-4 font-medium text-slate-200">${pay.name}</td>
                     <td class="px-6 py-4 text-emerald-400 font-mono">${pay.amount}</td>
                     <td class="px-6 py-4 text-slate-400 font-mono text-xs">${pay.date}</td>
                     ${isAdmin ? `<td class="px-6 py-4 text-right"><button class="text-xs text-rose-500 hover:text-rose-400 font-semibold">Void</button></td>` : ''}
-                </tr>`;
-            }).join('');
+                </tr>`);
             lucide.createIcons();
         }
 
-        // --- MUTATION ACTIONS ---
         function moveStudent(index, direction) {
             if (!isAdmin) return;
             if (index + direction < 0 || index + direction >= studentsState.length) return;
@@ -782,21 +818,6 @@
             studentsState = studentsState.filter(s => s.id !== id);
             renderAllData();
             executePostPayload({ action: "deleteStudent", id: id });
-        }
-
-        async function toggleAttendanceState(id, weekIndex) {
-            if(!isAdmin) return;
-            const student = studentsState.find(s => s.id === id);
-            if(student) {
-                student.attendance[weekIndex] = !student.attendance[weekIndex];
-                student.cumulativeChecks += student.attendance[weekIndex] ? 1 : -1; 
-                renderAttendance();
-                if(!document.getElementById('view-analytics').classList.contains('hidden')) calculateAnalyticsMetrics();
-                executePostPayload({ 
-                    action: "updateAttendance", id: id, month: document.getElementById('config-month').value, 
-                    date: activeLessonDates[weekIndex], status: student.attendance[weekIndex] 
-                });
-            }
         }
 
         function calculateAnalyticsMetrics() {
@@ -872,23 +893,6 @@
             }
         }
 
-        // --- BULK LOGIC & FETCHING ---
-        let currentImportContext = "";
-        function openBulkImportModal(context) {
-            if(!isAdmin) return;
-            currentImportContext = context;
-            const titleEl = document.getElementById('bulk-modal-title');
-            const instEl = document.getElementById('bulk-modal-instructions');
-            titleEl.innerHTML = `<i data-lucide="upload-cloud" class="w-5 h-5 text-blue-500"></i> Bulk Import ${context}`;
-            if (context === "Students") instEl.innerText = "Copy and paste from Excel. We auto-format 3 columns (Name, Grade, Section) or 5 columns (ID, Name, Grade...).";
-            else if (context === "Attendance") instEl.innerText = "John Doe, YYYY-MM-DD\nJane Smith, YYYY-MM-DD";
-            else if (context === "Payments") instEl.innerText = "John Doe, RM150, YYYY-MM-DD";
-            document.getElementById('bulk-import-textarea').value = "";
-            document.getElementById('bulk-import-modal').classList.remove('hidden');
-            lucide.createIcons();
-        }
-        function closeBulkImportModal() { document.getElementById('bulk-import-modal').classList.add('hidden'); }
-
         async function handleBulkImportSubmit(e) {
             e.preventDefault();
             const rawText = document.getElementById('bulk-import-textarea').value.trim();
@@ -927,20 +931,8 @@
                     });
                     if (backendRows.length > 0) executePostPayload({ action: "bulkImportStudents", data: backendRows });
                 } else if (currentImportContext === "Attendance") {
-                    const attendanceToSave = [];
-                    rows.forEach(row => {
-                        if (row.length >= 2) {
-                            const student = studentsState.find(s => (s.name || "").toString().toLowerCase() === row[0].toLowerCase());
-                            const dateIndex = activeLessonDates.indexOf(row[1]);
-                            if (student && dateIndex !== -1) {
-                                student.attendance[dateIndex] = true;
-                                student.cumulativeChecks = (student.cumulativeChecks || 0) + 1;
-                                attendanceToSave.push([document.getElementById('config-month').value, row[1], student.id, true]);
-                                rowsProcessed++;
-                            }
-                        }
-                    });
-                    if (attendanceToSave.length > 0) executePostPayload({ action: "bulkImportAttendanceData", data: attendanceToSave });
+                    await executePostPayload({ action: "bulkImportAttendance", month: document.getElementById('config-month').value, dates: activeLessonDates.join(",") });
+                    rowsProcessed = studentsState.length * activeLessonDates.length;
                 } else if (currentImportContext === "Payments") {
                     const paymentRows = [];
                     rows.forEach(row => {
@@ -953,11 +945,13 @@
                     if (paymentRows.length > 0) executePostPayload({ action: "bulkImportPayments", data: paymentRows });
                 }
 
-                renderAllData();
-                alert(`Successfully processed ${rowsProcessed} rows into ${currentImportContext}.`);
+                setTimeout(async () => {
+                    await fetchDashboardData();
+                    alert(`Successfully synchronized data parameters for ${currentImportContext}.`);
+                }, 3500);
             } catch (err) {
                 console.error(err);
-                alert("Error parsing data layout parameters. Check input lines.");
+                alert("Error parsing input payload structure maps.");
             } finally {
                 closeBulkImportModal();
                 btn.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4"></i> Process & Import`;
@@ -982,7 +976,7 @@
                     }
                 }
             } catch(err) {
-                console.warn("Failed to fetch backend data", err);
+                console.warn(err);
             } finally {
                 renderDatePickerInputs();
                 renderAllData();
@@ -990,16 +984,7 @@
             }
         }
 
-        function executePostPayload(data) {
-            if (!isAdmin) return;
-            try {
-                data.userEmail = document.getElementById('admin-email').value.trim();
-                fetch(MACRO_ENDPOINT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(data) });
-            } catch (err) {}
-        }
-
-        // --- UNUSED STUBS TO MAINTAIN NO-ERROR COMPILATION ---
-        function openAddStudentModal() { document.getElementById('add-student-modal').classList.remove('hidden'); }
+        function openAddStudentModal() { if(isAdmin) document.getElementById('add-student-modal').classList.remove('hidden'); }
         function closeAddStudentModal() { document.getElementById('add-student-modal').classList.add('hidden'); document.getElementById('add-student-form').reset(); }
         function handleAddStudentSubmit(e) {
             e.preventDefault(); 
@@ -1018,6 +1003,14 @@
             renderAllData();
             closeAddStudentModal();
             executePostPayload({ action: "bulkImportStudents", data: [[formattedId, name, grade, 'Active', section]] });
+        }
+
+        function executePostPayload(data) {
+            if (!isAdmin) return;
+            try {
+                data.userEmail = adminUserEmail;
+                fetch(MACRO_ENDPOINT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(data) });
+            } catch (err) {}
         }
     </script>
 </body>
