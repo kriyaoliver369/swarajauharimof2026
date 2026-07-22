@@ -807,34 +807,36 @@
         }
 
         function toggleAttendanceState(studentId, dateIdx) {
-            if (!isAdmin) return;
-            
-            const student = studentsState.find(s => s.id === studentId);
-            if (!student) return;
+    if (!isAdmin) return;
+    
+    const student = studentsState.find(s => s.id === studentId);
+    if (!student) return;
 
-            if (!student.attendance) {
-                student.attendance = new Array(activeLessonDates.length).fill(false);
-            }
+    if (!student.attendance) {
+        student.attendance = new Array(activeLessonDates.length).fill(false);
+    }
 
-            while (student.attendance.length < activeLessonDates.length) {
-                student.attendance.push(false);
-            }
+    while (student.attendance.length < activeLessonDates.length) {
+        student.attendance.push(false);
+    }
 
-            student.attendance[dateIdx] = !student.attendance[dateIdx];
-            student.cumulativeChecks = student.attendance.filter(Boolean).length;
+    student.attendance[dateIdx] = !student.attendance[dateIdx];
+    student.cumulativeChecks = student.attendance.filter(Boolean).length;
 
-            renderAttendance();
-            calculateAnalyticsMetrics();
+    renderAttendance();
+    calculateAnalyticsMetrics();
 
-            executePostPayload({
-                action: "updateAttendance",
-                month: document.getElementById('config-month').value,
-                studentId: studentId,
-                dateIdx: dateIdx,
-                status: student.attendance[dateIdx],
-                attendance: student.attendance
-            });
-        }
+    // Send exact date and id so Apps Script writes cleanly to the sheet
+    const targetDate = activeLessonDates[dateIdx];
+
+    executePostPayload({
+        action: "updateAttendance",
+        month: document.getElementById('config-month').value,
+        date: targetDate,
+        id: studentId,
+        status: student.attendance[dateIdx]
+    });
+}
         
         function renderAttendance() {
             const theadRow = document.querySelector('#view-attendance table thead tr');
