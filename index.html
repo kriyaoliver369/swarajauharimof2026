@@ -92,7 +92,7 @@
 
         <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
             
-            <!-- GLOBAL HEADER WIDGET: TODAY'S DATE & COUNTDOWNS (VISIBLE ON EVERY TAB) -->
+            <!-- GLOBAL HEADER WIDGET: TODAY'S DATE & COUNTDOWNS -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
                 <div class="bg-slate-800 border border-slate-700/80 rounded-xl p-4 flex items-center justify-between shadow-md">
                     <div>
@@ -374,6 +374,7 @@
         </footer>
     </div>
 
+    <!-- Modals removed for brevity, keep the exact same modals here from your original file -->
     <div id="bulk-import-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl p-6 space-y-4 shadow-2xl">
             <h3 id="bulk-modal-title" class="text-lg font-bold text-slate-200 tracking-wide uppercase flex items-center gap-2">
@@ -438,13 +439,13 @@
         
         let analyticsPayload = {
             songs: [
-                { id: Date.now(), title: "Song 1", scores: { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 }, comment: "" }
+                { id: Date.now(), title: "Song 1", scores: { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 }, comment: "", history: [] }
             ],
             sections: {
-                Soprano: { score: 0, comment: "" },
-                Alto: { score: 0, comment: "" },
-                Tenor: { score: 0, comment: "" },
-                Bass: { score: 0, comment: "" }
+                Soprano: { score: 0, comment: "", history: [] },
+                Alto: { score: 0, comment: "", history: [] },
+                Tenor: { score: 0, comment: "", history: [] },
+                Bass: { score: 0, comment: "", history: [] }
             }
         };
         
@@ -456,6 +457,92 @@
             "director@swarajauhari.com",
             "management@swarajauhari.com"
         ];
+
+        // --- NEW: HISTORY / VERSIONING FUNCTIONS ---
+        function getFormattedDate() {
+            return new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        function archiveSongComment(index) {
+            const song = analyticsPayload.songs[index];
+            if (!song.comment || song.comment.trim() === "") {
+                alert("The current remark is empty. Please write something before archiving.");
+                return;
+            }
+            if (!song.history) song.history = [];
+            song.history.unshift({ date: getFormattedDate(), text: song.comment });
+            song.comment = ""; 
+            renderAnalyticsUI();
+        }
+
+        function viewSongHistory(songIndex, historyIndex) {
+            const ta = document.getElementById(`song-ta-${songIndex}`);
+            const ind = document.getElementById(`song-word-ind-${songIndex}`);
+            const song = analyticsPayload.songs[songIndex];
+
+            if (historyIndex === 'current') {
+                ta.value = song.comment || "";
+                ta.disabled = !isAdmin;
+                const wCount = getWordStats(ta.value);
+                ind.innerText = `Remaining: ${200 - wCount} words`;
+                ind.className = "text-[10px] text-slate-500 font-mono";
+            } else {
+                ta.value = song.history[historyIndex].text;
+                ta.disabled = true;
+                ind.innerText = `Archived (${song.history[historyIndex].date})`;
+                ind.className = "text-[10px] text-emerald-500 font-bold font-mono tracking-wider";
+            }
+            ta.style.height = 'auto';
+            setTimeout(() => { ta.style.height = ta.scrollHeight + 'px'; }, 10);
+        }
+
+        function handleSongCommentInput(songIndex, val) {
+            const select = document.getElementById(`song-history-select-${songIndex}`);
+            if (select.value === 'current') {
+                analyticsPayload.songs[songIndex].comment = val;
+            }
+        }
+
+        function archiveSectionComment(sec) {
+            const data = analyticsPayload.sections[sec];
+            if (!data.comment || data.comment.trim() === "") {
+                alert("The current log is empty. Please write something before archiving.");
+                return;
+            }
+            if (!data.history) data.history = [];
+            data.history.unshift({ date: getFormattedDate(), text: data.comment });
+            data.comment = "";
+            renderAnalyticsUI();
+        }
+
+        function viewSectionHistory(sec, historyIndex) {
+            const ta = document.getElementById(`sec-ta-${sec}`);
+            const ind = document.getElementById(`voice-word-ind-${sec}`);
+            const data = analyticsPayload.sections[sec];
+
+            if (historyIndex === 'current') {
+                ta.value = data.comment || "";
+                ta.disabled = !isAdmin;
+                const wCount = getWordStats(ta.value);
+                ind.innerText = `Remaining: ${300 - wCount} words`;
+                ind.className = "text-[10px] text-slate-500 font-mono";
+            } else {
+                ta.value = data.history[historyIndex].text;
+                ta.disabled = true;
+                ind.innerText = `Archived (${data.history[historyIndex].date})`;
+                ind.className = "text-[10px] text-emerald-500 font-bold font-mono tracking-wider";
+            }
+            ta.style.height = 'auto';
+            setTimeout(() => { ta.style.height = ta.scrollHeight + 'px'; }, 10);
+        }
+
+        function handleSectionCommentInput(sec, val) {
+            const select = document.getElementById(`sec-history-select-${sec}`);
+            if (select.value === 'current') {
+                analyticsPayload.sections[sec].comment = val;
+            }
+        }
+
 
         // --- DYNAMIC CURRENT MONTH SETUP ---
         function setDefaultMonthToCurrent() {
@@ -602,6 +689,9 @@
             songsContainer.innerHTML = analyticsPayload.songs.map((song, index) => {
                 const wCount = getWordStats(song.comment || "");
                 const remWords = 200 - wCount;
+                
+                const historyOptions = (song.history || []).map((h, i) => `<option value="${i}">${h.date}</option>`).join('');
+                const archiveBtn = isAdmin ? `<button onclick="archiveSongComment(${index})" class="text-[9px] bg-slate-800 border border-slate-600 text-slate-300 hover:text-emerald-400 hover:border-emerald-500/50 px-2 py-0.5 rounded transition-all font-semibold flex items-center gap-1 shadow-sm" title="Save this comment to history and clear box for a new entry"><i data-lucide="history" class="w-3 h-3"></i> Archive</button>` : '';
 
                 return `
                 <div class="p-4 bg-slate-900/40 border border-slate-700/60 rounded-xl relative space-y-4">
@@ -621,11 +711,18 @@
                     </div>
                     
                     <div class="pt-2">
-                        <div class="flex justify-between items-center mb-1">
-                            <label class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Song Performance Remarks</label>
+                        <div class="flex flex-wrap justify-between items-end mb-2 gap-2">
+                            <div class="flex items-center gap-2">
+                                <label class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Performance Remarks</label>
+                                <select id="song-history-select-${index}" onchange="viewSongHistory(${index}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[10px] text-slate-300 focus:outline-none focus:border-amber-500 font-semibold cursor-pointer">
+                                    <option value="current">Current Version</option>
+                                    ${historyOptions}
+                                </select>
+                                ${archiveBtn}
+                            </div>
                             <span id="song-word-ind-${index}" class="text-[10px] text-slate-500 font-mono">Remaining: ${remWords} words</span>
                         </div>
-                        <textarea oninput="this.style.height='auto'; this.style.height=this.scrollHeight+'px'; enforceWordCap(this, 200, 'song-word-ind-${index}', (val)=>{updateSongComment(${index}, val)})" ${!isAdmin ? 'disabled' : ''} rows="3" placeholder="Enter song execution metrics and feedback details..." class="w-full bg-slate-950/50 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 text-slate-300 resize-y">${song.comment || ""}</textarea>
+                        <textarea id="song-ta-${index}" oninput="this.style.height='auto'; this.style.height=this.scrollHeight+'px'; enforceWordCap(this, 200, 'song-word-ind-${index}', (val)=>{handleSongCommentInput(${index}, val)})" ${!isAdmin ? 'disabled' : ''} rows="3" placeholder="Enter song execution metrics and feedback details..." class="w-full bg-slate-950/50 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 text-slate-300 resize-y">${song.comment || ""}</textarea>
                     </div>
                 </div>`;
             }).join('');
@@ -634,12 +731,15 @@
             const sections = ['Soprano', 'Alto', 'Tenor', 'Bass'];
             
             sectionContainer.innerHTML = sections.map(sec => {
-                const data = analyticsPayload.sections[sec] || { score: 0, comment: "" };
+                const data = analyticsPayload.sections[sec] || { score: 0, comment: "", history: [] };
                 const wCount = getWordStats(data.comment || "");
                 const remWords = 300 - wCount;
+                
+                const historyOptions = (data.history || []).map((h, i) => `<option value="${i}">${h.date}</option>`).join('');
+                const archiveBtn = isAdmin ? `<button onclick="archiveSectionComment('${sec}')" class="text-[9px] bg-slate-800 border border-slate-600 text-slate-300 hover:text-emerald-400 hover:border-emerald-500/50 px-2 py-0.5 rounded transition-all font-semibold flex items-center gap-1 shadow-sm" title="Save this log to history and clear box for a new entry"><i data-lucide="history" class="w-3 h-3"></i> Archive</button>` : '';
 
                 return `
-                <div class="bg-slate-900/40 border border-slate-700/60 rounded-xl p-4">
+                <div class="bg-slate-900/40 border border-slate-700/60 rounded-xl p-4 flex flex-col">
                     <div class="flex justify-between items-center mb-3">
                         <h4 class="text-sm font-bold text-slate-200">${sec} Section</h4>
                         <div class="flex items-center gap-2">
@@ -648,12 +748,19 @@
                             <span class="text-xs text-slate-500">/ 10</span>
                         </div>
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <div class="flex justify-between items-center">
-                            <label class="text-[9px] uppercase font-bold tracking-widest text-slate-500">Sectional Rehearsal Logs</label>
+                    <div class="flex flex-col gap-1 flex-1">
+                        <div class="flex flex-wrap justify-between items-end mb-2 gap-2">
+                            <div class="flex items-center gap-2">
+                                <label class="text-[9px] uppercase font-bold tracking-widest text-slate-500">Rehearsal Logs</label>
+                                <select id="sec-history-select-${sec}" onchange="viewSectionHistory('${sec}', this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[10px] text-slate-300 focus:outline-none focus:border-amber-500 font-semibold cursor-pointer">
+                                    <option value="current">Current Version</option>
+                                    ${historyOptions}
+                                </select>
+                                ${archiveBtn}
+                            </div>
                             <span id="voice-word-ind-${sec}" class="text-[10px] text-slate-500 font-mono">Remaining: ${remWords} words</span>
                         </div>
-                        <textarea oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; enforceWordCap(this, 300, 'voice-word-ind-${sec}', (val)=>{updateSectionData('${sec}', 'comment', val)})" ${!isAdmin ? 'disabled' : ''} style="height: auto;" placeholder="Provide target vocal placement adjustments for ${sec} choristers..." class="w-full bg-slate-950/50 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500 text-slate-300 min-h-[140px] overflow-hidden">${data.comment || ""}</textarea>
+                        <textarea id="sec-ta-${sec}" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; enforceWordCap(this, 300, 'voice-word-ind-${sec}', (val)=>{handleSectionCommentInput('${sec}', val)})" ${!isAdmin ? 'disabled' : ''} style="height: auto;" placeholder="Provide target vocal placement adjustments for ${sec} choristers..." class="w-full bg-slate-950/50 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500 text-slate-300 min-h-[140px] flex-1 overflow-hidden">${data.comment || ""}</textarea>
                     </div>
                 </div>`;
             }).join('');
@@ -704,7 +811,7 @@
 
         function addSong() {
             if(!isAdmin) return;
-            analyticsPayload.songs.push({ id: Date.now(), title: "New Repertoire Title", scores: { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 }, comment: "" });
+            analyticsPayload.songs.push({ id: Date.now(), title: "New Repertoire Title", scores: { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 }, comment: "", history: [] });
             renderAnalyticsUI();
         }
 
@@ -717,7 +824,6 @@
         }
 
         function updateSongTitle(index, val) { analyticsPayload.songs[index].title = val; }
-        function updateSongComment(index, val) { analyticsPayload.songs[index].comment = val; }
         function updateSongScore(index, metric, val) { 
             analyticsPayload.songs[index].scores[metric] = parseInt(val); 
             document.getElementById(`song-total-${index}`).innerText = `${calculateSingleSongTotal(analyticsPayload.songs[index])}/20 Pts`;
@@ -807,36 +913,35 @@
         }
 
         function toggleAttendanceState(studentId, dateIdx) {
-    if (!isAdmin) return;
-    
-    const student = studentsState.find(s => s.id === studentId);
-    if (!student) return;
+            if (!isAdmin) return;
+            
+            const student = studentsState.find(s => s.id === studentId);
+            if (!student) return;
 
-    if (!student.attendance) {
-        student.attendance = new Array(activeLessonDates.length).fill(false);
-    }
+            if (!student.attendance) {
+                student.attendance = new Array(activeLessonDates.length).fill(false);
+            }
 
-    while (student.attendance.length < activeLessonDates.length) {
-        student.attendance.push(false);
-    }
+            while (student.attendance.length < activeLessonDates.length) {
+                student.attendance.push(false);
+            }
 
-    student.attendance[dateIdx] = !student.attendance[dateIdx];
-    student.cumulativeChecks = student.attendance.filter(Boolean).length;
+            student.attendance[dateIdx] = !student.attendance[dateIdx];
+            student.cumulativeChecks = student.attendance.filter(Boolean).length;
 
-    renderAttendance();
-    calculateAnalyticsMetrics();
+            renderAttendance();
+            calculateAnalyticsMetrics();
 
-    // Send exact date and id so Apps Script writes cleanly to the sheet
-    const targetDate = activeLessonDates[dateIdx];
+            const targetDate = activeLessonDates[dateIdx];
 
-    executePostPayload({
-        action: "updateAttendance",
-        month: document.getElementById('config-month').value,
-        date: targetDate,
-        id: studentId,
-        status: student.attendance[dateIdx]
-    });
-}
+            executePostPayload({
+                action: "updateAttendance",
+                month: document.getElementById('config-month').value,
+                date: targetDate,
+                id: studentId,
+                status: student.attendance[dateIdx]
+            });
+        }
         
         function renderAttendance() {
             const theadRow = document.querySelector('#view-attendance table thead tr');
