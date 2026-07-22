@@ -92,6 +92,44 @@
 
         <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
             
+            <!-- GLOBAL HEADER WIDGET: TODAY'S DATE & COUNTDOWNS (VISIBLE ON EVERY TAB) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                <div class="bg-slate-800 border border-slate-700/80 rounded-xl p-4 flex items-center justify-between shadow-md">
+                    <div>
+                        <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Today's Date</p>
+                        <h4 id="global-today-date" class="text-sm font-semibold text-slate-100 mt-1">--</h4>
+                        <p id="global-today-day" class="text-xs text-slate-400">--</p>
+                    </div>
+                    <div class="w-10 h-10 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-center text-amber-500">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 border border-slate-700/80 rounded-xl p-4 flex items-center justify-between shadow-md">
+                    <div>
+                        <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Upcoming Event Target</p>
+                        <h4 class="text-sm font-semibold text-slate-200 mt-1">Pelancaran Hari Kebangsaan</h4>
+                        <p class="text-xs text-slate-400">1st August 2026</p>
+                    </div>
+                    <div class="text-right">
+                        <span id="countdown-1" class="text-3xl font-extrabold text-slate-100">--</span>
+                        <span class="text-[10px] text-slate-400 block uppercase tracking-widest mt-1">Days</span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 border border-slate-700/80 rounded-xl p-4 flex items-center justify-between shadow-md">
+                    <div>
+                        <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Upcoming Event Target</p>
+                        <h4 class="text-sm font-semibold text-slate-200 mt-1">Persembahan Perarakan Hari Kebangsaan</h4>
+                        <p class="text-xs text-slate-400">31st August 2026</p>
+                    </div>
+                    <div class="text-right">
+                        <span id="countdown-2" class="text-3xl font-extrabold text-slate-100">--</span>
+                        <span class="text-[10px] text-slate-400 block uppercase tracking-widest mt-1">Days</span>
+                    </div>
+                </div>
+            </div>
+
             <section id="view-attendance" class="tab-content space-y-6">
                 <div class="flex flex-wrap items-center justify-between gap-4">
                     <h2 class="text-lg font-bold text-slate-200 tracking-wide flex items-center gap-2">
@@ -211,31 +249,6 @@
 
             <section id="view-analytics" class="tab-content space-y-6 hidden">
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
-                    <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-center justify-between shadow-md">
-                        <div>
-                            <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Upcoming Event Target</p>
-                            <h4 class="text-sm font-semibold text-slate-200 mt-1">Pelancaran Hari Kebangsaan</h4>
-                            <p class="text-xs text-slate-400">1st August 2026</p>
-                        </div>
-                        <div class="text-right">
-                            <span id="countdown-1" class="text-3xl font-extrabold text-slate-100">--</span>
-                            <span class="text-[10px] text-slate-400 block uppercase tracking-widest mt-1">Days</span>
-                        </div>
-                    </div>
-                    <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-center justify-between shadow-md">
-                        <div>
-                            <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Upcoming Event Target</p>
-                            <h4 class="text-sm font-semibold text-slate-200 mt-1">Persembahan Perarakan Hari Kebangsaan</h4>
-                            <p class="text-xs text-slate-400">31st August 2026</p>
-                        </div>
-                        <div class="text-right">
-                            <span id="countdown-2" class="text-3xl font-extrabold text-slate-100">--</span>
-                            <span class="text-[10px] text-slate-400 block uppercase tracking-widest mt-1">Days</span>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="flex flex-wrap justify-between items-end border-b border-slate-700 pb-2 gap-4">
                     <h2 class="text-xl font-bold text-slate-100 uppercase tracking-widest flex items-center gap-2">
                         <i data-lucide="bar-chart-3" class="w-6 h-6 text-blue-500"></i> Performance Dashboard
@@ -444,6 +457,33 @@
             "management@swarajauhari.com"
         ];
 
+        // --- DYNAMIC CURRENT MONTH SETUP ---
+        function setDefaultMonthToCurrent() {
+            const now = new Date();
+            const monthNames = ["January", "February", "March", "April", "May", "June", 
+                                "July", "August", "September", "October", "November", "December"];
+            const currentMonthYear = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+            
+            const selectEl = document.getElementById('config-month');
+            if (selectEl) {
+                let exists = false;
+                for (let i = 0; i < selectEl.options.length; i++) {
+                    if (selectEl.options[i].value === currentMonthYear) {
+                        selectEl.selectedIndex = i;
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    const opt = document.createElement('option');
+                    opt.value = currentMonthYear;
+                    opt.innerText = currentMonthYear;
+                    opt.selected = true;
+                    selectEl.appendChild(opt);
+                }
+            }
+        }
+
         // --- AUTHENTICATION ENGINE ---
         function handleLogin(e) {
             e.preventDefault();
@@ -473,6 +513,7 @@
                 document.getElementById('payment-action-header').classList.remove('hidden');
             }
             
+            setDefaultMonthToCurrent();
             startCountdowns();
             fetchDashboardData();
             lucide.createIcons();
@@ -496,21 +537,34 @@
             }
         }
 
-        // --- SCHEDULING INTERFACES ---
+        // --- SCHEDULING INTERFACES & COUNTDOWNS ---
         function startCountdowns() {
             function update() {
-                const now = new Date().getTime();
+                const now = new Date();
+                
+                // Update Today's Date Display Box
+                const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+                const dayOptions = { weekday: 'long' };
+                const dateEl = document.getElementById('global-today-date');
+                const dayEl = document.getElementById('global-today-day');
+                if (dateEl) dateEl.innerText = now.toLocaleDateString('en-US', dateOptions);
+                if (dayEl) dayEl.innerText = now.toLocaleDateString('en-US', dayOptions);
+
+                // Update Countdown Timers
+                const nowTime = now.getTime();
                 const d1 = new Date("2026-08-01T00:00:00").getTime();
                 const d2 = new Date("2026-08-31T00:00:00").getTime();
 
-                const diff1 = Math.ceil((d1 - now) / (1000 * 60 * 60 * 24));
-                const diff2 = Math.ceil((d2 - now) / (1000 * 60 * 60 * 24));
+                const diff1 = Math.ceil((d1 - nowTime) / (1000 * 60 * 60 * 24));
+                const diff2 = Math.ceil((d2 - nowTime) / (1000 * 60 * 60 * 24));
 
-                document.getElementById('countdown-1').innerText = diff1 > 0 ? diff1 : 0;
-                document.getElementById('countdown-2').innerText = diff2 > 0 ? diff2 : 0;
+                const cd1 = document.getElementById('countdown-1');
+                const cd2 = document.getElementById('countdown-2');
+                if (cd1) cd1.innerText = diff1 > 0 ? diff1 : 0;
+                if (cd2) cd2.innerText = diff2 > 0 ? diff2 : 0;
             }
             update();
-            setInterval(update, 86400000); 
+            setInterval(update, 60000); 
         }
 
         // --- UTILITY ENGINE: COUNT WORDS & MANAGE INDICES ---
@@ -542,7 +596,7 @@
             updateCallback(element.value);
         }
 
-        // --- NEW REBUILT DIAGNOSTIC SUITE RUNTIMES ---
+        // --- DIAGNOSTIC SUITE RUNTIMES ---
         function renderAnalyticsUI() {
             const songsContainer = document.getElementById('songs-container');
             songsContainer.innerHTML = analyticsPayload.songs.map((song, index) => {
@@ -607,7 +661,6 @@
             lucide.createIcons();
             calculateRepertoireMastery();
 
-            // Auto-expand every analytics comment box to fit its full text (works in view-only mode too)
             document.querySelectorAll('#songs-container textarea, #section-comments-container textarea').forEach(ta => {
                 ta.style.height = 'auto';
                 ta.style.height = ta.scrollHeight + 'px';
@@ -644,7 +697,6 @@
             analyticsPayload.songs.forEach(song => { totalPoints += calculateSingleSongTotal(song); });
             const percentage = Math.round((totalPoints / maxPoints) * 100);
             
-            // Sync all summary labels natively
             document.getElementById('kpi-repertoire').innerText = `${percentage}%`;
             document.getElementById('repertoire-aggregated-raw').innerText = `${totalPoints} / ${maxPoints} Pts`;
             document.getElementById('repertoire-aggregated-percent').innerText = `${percentage}%`;
@@ -731,7 +783,6 @@
             const todayStr = new Date().toISOString().split('T')[0];
             activeLessonDates.push(todayStr);
 
-            // Expand attendance arrays for all students to fit the new date
             studentsState.forEach(student => {
                 if (!student.attendance) {
                     student.attendance = [];
@@ -755,35 +806,26 @@
             });
         }
 
-        // --- PASTE NEW FUNCTION HERE ---
         function toggleAttendanceState(studentId, dateIdx) {
             if (!isAdmin) return;
             
-            // Find student in memory state
             const student = studentsState.find(s => s.id === studentId);
             if (!student) return;
 
-            // Initialize attendance array if missing
             if (!student.attendance) {
                 student.attendance = new Array(activeLessonDates.length).fill(false);
             }
 
-            // Ensure array length matches active lesson dates count
             while (student.attendance.length < activeLessonDates.length) {
                 student.attendance.push(false);
             }
 
-            // Toggle checkmark boolean
             student.attendance[dateIdx] = !student.attendance[dateIdx];
-            
-            // Recalculate total checkmarks
             student.cumulativeChecks = student.attendance.filter(Boolean).length;
 
-            // Update UI & Executive Analytics instantly
             renderAttendance();
             calculateAnalyticsMetrics();
 
-            // Sync state update to Google Apps Script backend
             executePostPayload({
                 action: "updateAttendance",
                 month: document.getElementById('config-month').value,
@@ -1019,11 +1061,11 @@
 
         async function fetchDashboardData() {
             try {
-                const chosenMonth = document.getElementById('config-month').value || "June 2026";
+                const chosenMonth = document.getElementById('config-month').value || "July 2026";
                 const response = await fetch(MACRO_ENDPOINT_URL + "?action=getDashboard&month=" + encodeURIComponent(chosenMonth));
                 if (response.ok) {
                     const jsonPayload = await response.json();
-                    activeLessonDates = (jsonPayload && jsonPayload.dates) ? jsonPayload.dates : [];
+                    activeLessonDates = (jsonPayload && jsonPayload.dates && jsonPayload.dates.length > 0) ? jsonPayload.dates : activeLessonDates;
                     studentsState = (jsonPayload && jsonPayload.students) ? jsonPayload.students : [];
                     paymentsState = (jsonPayload && jsonPayload.payments) ? jsonPayload.payments : [];
                     globalTotalSessions = jsonPayload.globalTotalSessions || activeLessonDates.length;
@@ -1031,6 +1073,16 @@
                     if (jsonPayload && jsonPayload.analyticsPayload) {
                         analyticsPayload = jsonPayload.analyticsPayload;
                     }
+
+                    // Normalize student attendance arrays to match the active dates length
+                    studentsState.forEach(student => {
+                        if (!student.attendance || !Array.isArray(student.attendance)) {
+                            student.attendance = [];
+                        }
+                        while (student.attendance.length < activeLessonDates.length) {
+                            student.attendance.push(false);
+                        }
+                    });
                 }
             } catch(err) {
                 console.warn(err);
