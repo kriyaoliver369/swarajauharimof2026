@@ -282,12 +282,16 @@
                     </div>
                 </div>
 
+                <!-- OVERALL CHOIR SESSION PROGRESS SECTION -->
                 <div class="bg-slate-800 border border-slate-700 rounded-xl shadow-md overflow-hidden">
                     <div class="bg-slate-900/60 p-4 border-b border-slate-700 flex justify-between items-center">
-                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Overall Choir Session Progress</h3>
-                        <button onclick="addSong()" class="text-xs bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white px-2.5 py-1 rounded transition-all font-semibold">+ Add Song Track</button>
+                        <div>
+                            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Overall Choir Session Progress</h3>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Track repertoire ratings and historic coaching feedback timelines</p>
+                        </div>
+                        <button onclick="addSong()" class="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5">+ Add Song Track</button>
                     </div>
-                    <div class="px-5 py-3 bg-slate-800/50 border-b border-slate-700/50">
+                    <div class="px-5 py-2.5 bg-slate-800/50 border-b border-slate-700/50">
                         <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono">
                             <span class="font-bold text-slate-300">Legend Metric Matrix:</span> 1 = Not fully effective | 2 = Capable | 3 = Proficient | 4 = Impressive
                         </p>
@@ -306,10 +310,11 @@
                     </div>
                 </div>
 
+                <!-- SECTIONAL GROUP PROGRESS LEDGER -->
                 <div class="bg-slate-800 border border-slate-700 rounded-xl shadow-md overflow-hidden">
                     <div class="bg-slate-900/60 p-4 border-b border-slate-700">
                         <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Sectional Group Progress Ledger</h3>
-                        <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono mt-2">
+                        <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono mt-1">
                             <span class="font-bold text-slate-300">Section Score Metric Scale:</span> 0-4 (Needs Work) | 5-7 (Developing) | 8-10 (Performance Ready)
                         </p>
                     </div>
@@ -374,7 +379,7 @@
         </footer>
     </div>
 
-    <!-- Modals removed for brevity, keep the exact same modals here from your original file -->
+    <!-- MODAL 1: BULK IMPORT -->
     <div id="bulk-import-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl p-6 space-y-4 shadow-2xl">
             <h3 id="bulk-modal-title" class="text-lg font-bold text-slate-200 tracking-wide uppercase flex items-center gap-2">
@@ -398,6 +403,7 @@
         </div>
     </div>
 
+    <!-- MODAL 2: ADD SINGLE STUDENT -->
     <div id="add-student-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
             <h3 class="text-sm font-bold text-slate-200 tracking-wide uppercase text-amber-500">Register New Student</h3>
@@ -428,6 +434,96 @@
         </div>
     </div>
 
+    <!-- NEW DRAWER: FEEDBACK HISTORY TIMELINE -->
+    <div id="history-drawer" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex justify-end hidden transition-opacity">
+        <div class="bg-slate-900 border-l border-slate-700 w-full max-w-lg h-full p-6 flex flex-col shadow-2xl overflow-y-auto space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <h3 id="drawer-title" class="text-base font-bold text-amber-500 uppercase tracking-wide">Feedback History</h3>
+                    <p id="drawer-subtitle" class="text-xs text-slate-400 mt-0.5">Chronological Coaching Logs & Ratings</p>
+                </div>
+                <button onclick="closeHistoryDrawer()" class="p-2 text-slate-400 hover:text-white rounded-lg bg-slate-800 hover:bg-slate-700 transition-all">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div id="drawer-timeline-container" class="space-y-6 flex-1">
+                <!-- Timeline items render dynamically here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW MODAL: ADD LOG ENTRY -->
+    <div id="add-log-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-700/60 pb-3">
+                <h3 id="add-log-modal-title" class="text-sm font-bold text-amber-500 uppercase tracking-wide">Submit New Coaching Log</h3>
+                <button onclick="closeAddLogModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <form id="add-log-form" onsubmit="handleAddLogSubmit(event)" class="space-y-4">
+                <input type="hidden" id="add-log-target-type"> <!-- 'song' or 'section' -->
+                <input type="hidden" id="add-log-target-key">  <!-- song index or section name -->
+                
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Session Date / Milestone Tag</label>
+                    <input id="add-log-date" type="text" required placeholder="e.g., 22 Jul 2026 or Rehearsal #5" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500 text-slate-200">
+                </div>
+
+                <!-- Song Scores Section (Shown dynamically if type === 'song') -->
+                <div id="add-log-song-scores" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50 hidden">
+                    <div>
+                        <label class="block text-[9px] uppercase font-bold text-slate-400">Technique</label>
+                        <select id="log-score-tech" class="w-full bg-slate-950 border border-slate-700 rounded p-1.5 text-xs text-slate-200">
+                            <option value="1">1 - Needs Work</option><option value="2" selected>2 - Capable</option><option value="3">3 - Proficient</option><option value="4">4 - Impressive</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] uppercase font-bold text-slate-400">Rhythm</label>
+                        <select id="log-score-rhythm" class="w-full bg-slate-950 border border-slate-700 rounded p-1.5 text-xs text-slate-200">
+                            <option value="1">1 - Needs Work</option><option value="2" selected>2 - Capable</option><option value="3">3 - Proficient</option><option value="4">4 - Impressive</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] uppercase font-bold text-slate-400">Accuracy</label>
+                        <select id="log-score-acc" class="w-full bg-slate-950 border border-slate-700 rounded p-1.5 text-xs text-slate-200">
+                            <option value="1">1 - Needs Work</option><option value="2" selected>2 - Capable</option><option value="3">3 - Proficient</option><option value="4">4 - Impressive</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] uppercase font-bold text-slate-400">Dynamics</label>
+                        <select id="log-score-dyn" class="w-full bg-slate-950 border border-slate-700 rounded p-1.5 text-xs text-slate-200">
+                            <option value="1">1 - Needs Work</option><option value="2" selected>2 - Capable</option><option value="3">3 - Proficient</option><option value="4">4 - Impressive</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] uppercase font-bold text-slate-400">Flair</label>
+                        <select id="log-score-flair" class="w-full bg-slate-950 border border-slate-700 rounded p-1.5 text-xs text-slate-200">
+                            <option value="1" selected>1 - Needs Work</option><option value="2">2 - Capable</option><option value="3">3 - Proficient</option><option value="4">4 - Impressive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section Score (Shown dynamically if type === 'section') -->
+                <div id="add-log-section-score" class="hidden">
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Section Readiness Score (0 - 10)</label>
+                    <input id="log-score-sec" type="number" min="0" max="10" value="6" class="w-24 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold text-amber-500 text-center">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Coach Notes & Progress Observations</label>
+                    <textarea id="add-log-comment" required rows="4" placeholder="Detail specific adjustments, accomplishments, or vocal hurdles..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500 text-slate-200 resize-y"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-700/60">
+                    <button type="button" onclick="closeAddLogModal()" class="px-4 py-2 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 flex items-center gap-1.5">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i> Append Entry
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         let studentsState = [];
         let paymentsState = [];
@@ -439,13 +535,40 @@
         
         let analyticsPayload = {
             songs: [
-                { id: Date.now(), title: "Song 1", scores: { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 }, comment: "", history: [] }
+                {
+                    id: Date.now(),
+                    title: "Sabah Maju Jaya",
+                    logs: [
+                        {
+                            id: "log-1",
+                            date: "20 Jul 2026",
+                            scores: { technique: 2, rhythmic: 2, accuracy: 2, dynamics: 2, flair: 1 },
+                            comment: "Singers are capable of singing the assigned vocal arrangements. They need to work on pitch and vocal technique to ensure the overall choral tonal quality."
+                        }
+                    ]
+                }
             ],
             sections: {
-                Soprano: { score: 0, comment: "", history: [] },
-                Alto: { score: 0, comment: "", history: [] },
-                Tenor: { score: 0, comment: "", history: [] },
-                Bass: { score: 0, comment: "", history: [] }
+                Soprano: {
+                    logs: [
+                        { id: "sec-sop-1", date: "22 Jul 2026", score: 7, comment: "You are currently on transition state to either good or mediocre performance. Singers need to be aware of each other's awareness to make a quality sound." }
+                    ]
+                },
+                Alto: {
+                    logs: [
+                        { id: "sec-alt-1", date: "22 Jul 2026", score: 8, comment: "This group shows much effort in producing good vocal tone. Their current challenge is to sing on pitch." }
+                    ]
+                },
+                Tenor: {
+                    logs: [
+                        { id: "sec-ten-1", date: "22 Jul 2026", score: 6, comment: "The tenors are quick learners yet they are always struggling to blend their tone and to sing on tempo." }
+                    ]
+                },
+                Bass: {
+                    logs: [
+                        { id: "sec-bas-1", date: "22 Jul 2026", score: 5, comment: "This group is the most important section in this choir because how the song and arrangement constructed to support the other three vocal sections." }
+                    ]
+                }
             }
         };
         
@@ -458,97 +581,47 @@
             "management@swarajauhari.com"
         ];
 
-        // --- NEW: HISTORY / VERSIONING FUNCTIONS ---
-        function getFormattedDate() {
-            return new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        // --- NORMALIZE ANALYTICS DATA (BACKWARD COMPATIBILITY) ---
+        function ensureAnalyticsLogsStructure() {
+            if (!analyticsPayload) return;
+            if (!analyticsPayload.songs) analyticsPayload.songs = [];
+            
+            // Upgrade legacy flat song entries into logs array if necessary
+            analyticsPayload.songs.forEach(song => {
+                if (!song.logs) {
+                    song.logs = [];
+                    if (song.comment || song.scores) {
+                        song.logs.push({
+                            id: "legacy-" + Date.now(),
+                            date: "Initial Log",
+                            scores: song.scores || { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 },
+                            comment: song.comment || ""
+                        });
+                    }
+                }
+            });
+
+            // Upgrade legacy flat section entries
+            const secNames = ['Soprano', 'Alto', 'Tenor', 'Bass'];
+            if (!analyticsPayload.sections) analyticsPayload.sections = {};
+            secNames.forEach(sec => {
+                if (!analyticsPayload.sections[sec]) {
+                    analyticsPayload.sections[sec] = { logs: [] };
+                } else if (!analyticsPayload.sections[sec].logs) {
+                    const oldSec = analyticsPayload.sections[sec];
+                    analyticsPayload.sections[sec] = {
+                        logs: [
+                            { id: "legacy-sec-" + Date.now(), date: "Initial Log", score: oldSec.score || 0, comment: oldSec.comment || "" }
+                        ]
+                    };
+                }
+            });
         }
 
-        function archiveSongComment(index) {
-            const song = analyticsPayload.songs[index];
-            if (!song.comment || song.comment.trim() === "") {
-                alert("The current remark is empty. Please write something before archiving.");
-                return;
-            }
-            if (!song.history) song.history = [];
-            song.history.unshift({ date: getFormattedDate(), text: song.comment });
-            song.comment = ""; 
-            renderAnalyticsUI();
-        }
-
-        function viewSongHistory(songIndex, historyIndex) {
-            const ta = document.getElementById(`song-ta-${songIndex}`);
-            const ind = document.getElementById(`song-word-ind-${songIndex}`);
-            const song = analyticsPayload.songs[songIndex];
-
-            if (historyIndex === 'current') {
-                ta.value = song.comment || "";
-                ta.disabled = !isAdmin;
-                const wCount = getWordStats(ta.value);
-                ind.innerText = `Remaining: ${200 - wCount} words`;
-                ind.className = "text-[10px] text-slate-500 font-mono";
-            } else {
-                ta.value = song.history[historyIndex].text;
-                ta.disabled = true;
-                ind.innerText = `Archived (${song.history[historyIndex].date})`;
-                ind.className = "text-[10px] text-emerald-500 font-bold font-mono tracking-wider";
-            }
-            ta.style.height = 'auto';
-            setTimeout(() => { ta.style.height = ta.scrollHeight + 'px'; }, 10);
-        }
-
-        function handleSongCommentInput(songIndex, val) {
-            const select = document.getElementById(`song-history-select-${songIndex}`);
-            if (select.value === 'current') {
-                analyticsPayload.songs[songIndex].comment = val;
-            }
-        }
-
-        function archiveSectionComment(sec) {
-            const data = analyticsPayload.sections[sec];
-            if (!data.comment || data.comment.trim() === "") {
-                alert("The current log is empty. Please write something before archiving.");
-                return;
-            }
-            if (!data.history) data.history = [];
-            data.history.unshift({ date: getFormattedDate(), text: data.comment });
-            data.comment = "";
-            renderAnalyticsUI();
-        }
-
-        function viewSectionHistory(sec, historyIndex) {
-            const ta = document.getElementById(`sec-ta-${sec}`);
-            const ind = document.getElementById(`voice-word-ind-${sec}`);
-            const data = analyticsPayload.sections[sec];
-
-            if (historyIndex === 'current') {
-                ta.value = data.comment || "";
-                ta.disabled = !isAdmin;
-                const wCount = getWordStats(ta.value);
-                ind.innerText = `Remaining: ${300 - wCount} words`;
-                ind.className = "text-[10px] text-slate-500 font-mono";
-            } else {
-                ta.value = data.history[historyIndex].text;
-                ta.disabled = true;
-                ind.innerText = `Archived (${data.history[historyIndex].date})`;
-                ind.className = "text-[10px] text-emerald-500 font-bold font-mono tracking-wider";
-            }
-            ta.style.height = 'auto';
-            setTimeout(() => { ta.style.height = ta.scrollHeight + 'px'; }, 10);
-        }
-
-        function handleSectionCommentInput(sec, val) {
-            const select = document.getElementById(`sec-history-select-${sec}`);
-            if (select.value === 'current') {
-                analyticsPayload.sections[sec].comment = val;
-            }
-        }
-
-
-        // --- DYNAMIC CURRENT MONTH SETUP ---
+        // --- SCHEDULING INTERFACES & COUNTDOWNS ---
         function setDefaultMonthToCurrent() {
             const now = new Date();
-            const monthNames = ["January", "February", "March", "April", "May", "June", 
-                                "July", "August", "September", "October", "November", "December"];
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             const currentMonthYear = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
             
             const selectEl = document.getElementById('config-month');
@@ -571,7 +644,6 @@
             }
         }
 
-        // --- AUTHENTICATION ENGINE ---
         function handleLogin(e) {
             e.preventDefault();
             const emailInput = document.getElementById('admin-email').value.trim().toLowerCase();
@@ -624,12 +696,9 @@
             }
         }
 
-        // --- SCHEDULING INTERFACES & COUNTDOWNS ---
         function startCountdowns() {
             function update() {
                 const now = new Date();
-                
-                // Update Today's Date Display Box
                 const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
                 const dayOptions = { weekday: 'long' };
                 const dateEl = document.getElementById('global-today-date');
@@ -637,7 +706,6 @@
                 if (dateEl) dateEl.innerText = now.toLocaleDateString('en-US', dateOptions);
                 if (dayEl) dayEl.innerText = now.toLocaleDateString('en-US', dayOptions);
 
-                // Update Countdown Timers
                 const nowTime = now.getTime();
                 const d1 = new Date("2026-08-01T00:00:00").getTime();
                 const d2 = new Date("2026-08-31T00:00:00").getTime();
@@ -654,141 +722,118 @@
             setInterval(update, 60000); 
         }
 
-        // --- UTILITY ENGINE: COUNT WORDS & MANAGE INDICES ---
-        function getWordStats(str) {
-            if (!str) return 0;
-            return str.trim().split(/\s+/).filter(w => w.length > 0).length;
+        // --- NEW EXECUTIVE ANALYTICS RENDERING ENGINE ---
+        function getLatestSongLog(song) {
+            if (!song.logs || song.logs.length === 0) {
+                return { date: 'N/A', scores: { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 }, comment: 'No logs registered.' };
+            }
+            return song.logs[0]; // Newest entry is always at index 0
         }
 
-        function enforceWordCap(element, limit, indicatorId, updateCallback) {
-            let text = element.value;
-            let currentCount = getWordStats(text);
-            
-            if (currentCount > limit) {
-                let tokens = text.trim().split(/\s+/);
-                element.value = tokens.slice(0, limit).join(" ");
-                currentCount = limit;
+        function getLatestSectionLog(sectionObj) {
+            if (!sectionObj.logs || sectionObj.logs.length === 0) {
+                return { date: 'N/A', score: 0, comment: 'No logs registered.' };
             }
-            
-            const remaining = limit - currentCount;
-            const ind = document.getElementById(indicatorId);
-            if(ind) {
-                ind.innerText = `Remaining: ${remaining} words`;
-                if(remaining <= 10) {
-                    ind.className = "text-[10px] font-bold text-rose-400 font-mono transition-colors";
-                } else {
-                    ind.className = "text-[10px] text-slate-500 font-mono transition-colors";
-                }
-            }
-            updateCallback(element.value);
+            return sectionObj.logs[0];
         }
 
-        // --- DIAGNOSTIC SUITE RUNTIMES ---
         function renderAnalyticsUI() {
+            ensureAnalyticsLogsStructure();
+            
+            // 1. RENDER SONGS
             const songsContainer = document.getElementById('songs-container');
             songsContainer.innerHTML = analyticsPayload.songs.map((song, index) => {
-                const wCount = getWordStats(song.comment || "");
-                const remWords = 200 - wCount;
-                
-                const historyOptions = (song.history || []).map((h, i) => `<option value="${i}">${h.date}</option>`).join('');
-                const archiveBtn = isAdmin ? `<button onclick="archiveSongComment(${index})" class="text-[9px] bg-slate-800 border border-slate-600 text-slate-300 hover:text-emerald-400 hover:border-emerald-500/50 px-2 py-0.5 rounded transition-all font-semibold flex items-center gap-1 shadow-sm" title="Save this comment to history and clear box for a new entry"><i data-lucide="history" class="w-3 h-3"></i> Archive</button>` : '';
+                const latest = getLatestSongLog(song);
+                const totalPts = calculateSingleSongTotal(latest.scores);
 
                 return `
-                <div class="p-4 bg-slate-900/40 border border-slate-700/60 rounded-xl relative space-y-4">
-                    <div class="flex justify-between items-center">
-                        <input type="text" value="${song.title}" onchange="updateSongTitle(${index}, this.value)" ${!isAdmin ? 'disabled' : ''} class="bg-transparent border-b border-slate-600 focus:border-amber-500 focus:outline-none text-sm text-slate-200 font-bold w-1/2 py-1 transition-colors">
-                        <div class="flex items-center gap-3">
-                            <span class="text-xs font-mono font-bold text-amber-500" id="song-total-${index}">${calculateSingleSongTotal(song)}/20 Pts</span>
-                            ${isAdmin ? `<button onclick="removeSong(${index})" class="text-rose-500 hover:text-rose-400 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
+                <div class="p-5 bg-slate-900/50 border border-slate-700/60 rounded-xl relative space-y-4 shadow-sm">
+                    <div class="flex flex-wrap justify-between items-center gap-3">
+                        <input type="text" value="${song.title}" onchange="updateSongTitle(${index}, this.value)" ${!isAdmin ? 'disabled' : ''} class="bg-transparent border-b border-slate-700 focus:border-amber-500 focus:outline-none text-base text-slate-100 font-bold py-0.5 transition-colors max-w-xs sm:max-w-md">
+                        <div class="flex items-center gap-2 sm:gap-3">
+                            <span class="text-xs font-mono font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg" id="song-total-${index}">${totalPts}/20 Pts</span>
+                            <button onclick="openSongHistoryModal(${index})" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-medium" title="View timeline of all past reviews">
+                                <i data-lucide="history" class="w-3.5 h-3.5 text-blue-400"></i> History (${song.logs ? song.logs.length : 0})
+                            </button>
+                            ${isAdmin ? `<button onclick="openAddLogModal('song', ${index})" class="text-xs bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white border border-emerald-500/30 px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1"><i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Log</button>` : ''}
+                            ${isAdmin ? `<button onclick="removeSong(${index})" class="text-rose-500 hover:text-rose-400 p-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-                        ${renderScoreSelect(index, 'technique', 'Technique & Control', song.scores.technique)}
-                        ${renderScoreSelect(index, 'rhythmic', 'Rhythmic Fluency', song.scores.rhythmic)}
-                        ${renderScoreSelect(index, 'accuracy', 'General Accuracy', song.scores.accuracy)}
-                        ${renderScoreSelect(index, 'dynamics', 'Dynamics/Interpret', song.scores.dynamics)}
-                        ${renderScoreSelect(index, 'flair', 'Performance Flair', song.scores.flair)}
+
+                    <!-- Metrics Badges -->
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-1">
+                        ${renderMetricPill('Technique & Control', latest.scores.technique)}
+                        ${renderMetricPill('Rhythmic Fluency', latest.scores.rhythmic)}
+                        ${renderMetricPill('General Accuracy', latest.scores.accuracy)}
+                        ${renderMetricPill('Dynamics / Interpret', latest.scores.dynamics)}
+                        ${renderMetricPill('Performance Flair', latest.scores.flair)}
                     </div>
-                    
-                    <div class="pt-2">
-                        <div class="flex flex-wrap justify-between items-end mb-2 gap-2">
-                            <div class="flex items-center gap-2">
-                                <label class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Performance Remarks</label>
-                                <select id="song-history-select-${index}" onchange="viewSongHistory(${index}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[10px] text-slate-300 focus:outline-none focus:border-amber-500 font-semibold cursor-pointer">
-                                    <option value="current">Current Version</option>
-                                    ${historyOptions}
-                                </select>
-                                ${archiveBtn}
-                            </div>
-                            <span id="song-word-ind-${index}" class="text-[10px] text-slate-500 font-mono">Remaining: ${remWords} words</span>
+
+                    <!-- Sleek Coach Remark Display Block -->
+                    <div class="bg-slate-950/60 border-l-4 border-amber-500 rounded-r-xl p-3.5 text-xs relative">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <i data-lucide="message-square-quote" class="w-3.5 h-3.5 text-amber-500"></i> Latest Coach Insight
+                            </span>
+                            <span class="text-[10px] text-amber-500/90 font-mono bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded font-bold">${latest.date || 'Active Entry'}</span>
                         </div>
-                        <textarea id="song-ta-${index}" oninput="this.style.height='auto'; this.style.height=this.scrollHeight+'px'; enforceWordCap(this, 200, 'song-word-ind-${index}', (val)=>{handleSongCommentInput(${index}, val)})" ${!isAdmin ? 'disabled' : ''} rows="3" placeholder="Enter song execution metrics and feedback details..." class="w-full bg-slate-950/50 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 text-slate-300 resize-y">${song.comment || ""}</textarea>
+                        <p class="text-slate-200 leading-relaxed italic">${latest.comment || "No written remarks recorded for this run."}</p>
                     </div>
                 </div>`;
             }).join('');
 
+            // 2. RENDER VOICE SECTIONS
             const sectionContainer = document.getElementById('section-comments-container');
             const sections = ['Soprano', 'Alto', 'Tenor', 'Bass'];
             
             sectionContainer.innerHTML = sections.map(sec => {
-                const data = analyticsPayload.sections[sec] || { score: 0, comment: "", history: [] };
-                const wCount = getWordStats(data.comment || "");
-                const remWords = 300 - wCount;
-                
-                const historyOptions = (data.history || []).map((h, i) => `<option value="${i}">${h.date}</option>`).join('');
-                const archiveBtn = isAdmin ? `<button onclick="archiveSectionComment('${sec}')" class="text-[9px] bg-slate-800 border border-slate-600 text-slate-300 hover:text-emerald-400 hover:border-emerald-500/50 px-2 py-0.5 rounded transition-all font-semibold flex items-center gap-1 shadow-sm" title="Save this log to history and clear box for a new entry"><i data-lucide="history" class="w-3 h-3"></i> Archive</button>` : '';
+                const secObj = analyticsPayload.sections[sec] || { logs: [] };
+                const latest = getLatestSectionLog(secObj);
 
                 return `
-                <div class="bg-slate-900/40 border border-slate-700/60 rounded-xl p-4 flex flex-col">
-                    <div class="flex justify-between items-center mb-3">
-                        <h4 class="text-sm font-bold text-slate-200">${sec} Section</h4>
+                <div class="bg-slate-900/50 border border-slate-700/60 rounded-xl p-4 flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full ${sec==='Soprano'?'bg-rose-400':sec==='Alto'?'bg-amber-400':sec==='Tenor'?'bg-blue-400':'bg-emerald-400'}"></span>
+                            ${sec} Section
+                        </h4>
                         <div class="flex items-center gap-2">
-                            <span class="text-xs text-slate-400 uppercase tracking-widest font-bold">Score</span>
-                            <input type="number" min="0" max="10" value="${data.score}" onchange="updateSectionData('${sec}', 'score', this.value)" ${!isAdmin ? 'disabled' : ''} class="w-16 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center text-sm font-bold text-amber-500 focus:outline-none focus:border-blue-500">
-                            <span class="text-xs text-slate-500">/ 10</span>
+                            <span class="text-xs bg-slate-950 border border-slate-700 px-2.5 py-1 rounded-lg font-mono font-bold text-amber-500">
+                                ${latest.score} / 10
+                            </span>
+                            <button onclick="openSectionHistoryModal('${sec}')" class="text-[11px] bg-slate-800 hover:bg-slate-700 border border-slate-600 px-2 py-1 rounded-lg text-slate-300 font-medium flex items-center gap-1">
+                                <i data-lucide="history" class="w-3 h-3 text-blue-400"></i> Logs (${secObj.logs ? secObj.logs.length : 0})
+                            </button>
+                            ${isAdmin ? `<button onclick="openAddLogModal('section', '${sec}')" class="text-[11px] bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white border border-emerald-500/30 px-2 py-1 rounded-lg font-semibold">+ Log</button>` : ''}
                         </div>
                     </div>
-                    <div class="flex flex-col gap-1 flex-1">
-                        <div class="flex flex-wrap justify-between items-end mb-2 gap-2">
-                            <div class="flex items-center gap-2">
-                                <label class="text-[9px] uppercase font-bold tracking-widest text-slate-500">Rehearsal Logs</label>
-                                <select id="sec-history-select-${sec}" onchange="viewSectionHistory('${sec}', this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[10px] text-slate-300 focus:outline-none focus:border-amber-500 font-semibold cursor-pointer">
-                                    <option value="current">Current Version</option>
-                                    ${historyOptions}
-                                </select>
-                                ${archiveBtn}
-                            </div>
-                            <span id="voice-word-ind-${sec}" class="text-[10px] text-slate-500 font-mono">Remaining: ${remWords} words</span>
+
+                    <div class="bg-slate-950/60 border-l-4 border-blue-500 rounded-r-xl p-3 text-xs flex-1 flex flex-col justify-between">
+                        <p class="text-slate-300 leading-relaxed italic mb-2">${latest.comment || "No sectional notes logged."}</p>
+                        <div class="text-right border-t border-slate-800/80 pt-1.5 mt-auto">
+                            <span class="text-[9px] text-slate-500 font-mono">Date: ${latest.date || 'Active Entry'}</span>
                         </div>
-                        <textarea id="sec-ta-${sec}" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; enforceWordCap(this, 300, 'voice-word-ind-${sec}', (val)=>{handleSectionCommentInput('${sec}', val)})" ${!isAdmin ? 'disabled' : ''} style="height: auto;" placeholder="Provide target vocal placement adjustments for ${sec} choristers..." class="w-full bg-slate-950/50 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500 text-slate-300 min-h-[140px] flex-1 overflow-hidden">${data.comment || ""}</textarea>
                     </div>
                 </div>`;
             }).join('');
             
             lucide.createIcons();
             calculateRepertoireMastery();
-
-            document.querySelectorAll('#songs-container textarea, #section-comments-container textarea').forEach(ta => {
-                ta.style.height = 'auto';
-                ta.style.height = ta.scrollHeight + 'px';
-            });
         }
 
-        function renderScoreSelect(songIndex, metricKey, label, currentValue) {
+        function renderMetricPill(label, val) {
+            const levelLabels = { 1: "1 - Needs Work", 2: "2 - Capable", 3: "3 - Proficient", 4: "4 - Impressive" };
+            const levelColors = { 1: "text-rose-400 border-rose-500/20 bg-rose-500/10", 2: "text-amber-400 border-amber-500/20 bg-amber-500/10", 3: "text-blue-400 border-blue-500/20 bg-blue-500/10", 4: "text-emerald-400 border-emerald-500/20 bg-emerald-500/10" };
             return `
-            <div class="flex flex-col gap-1">
-                <label class="text-[10px] uppercase font-bold tracking-widest text-slate-500">${label}</label>
-                <select onchange="updateSongScore(${songIndex}, '${metricKey}', this.value)" ${!isAdmin ? 'disabled' : ''} class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500">
-                    <option value="1" ${currentValue == 1 ? 'selected' : ''}>1 - Needs Work</option>
-                    <option value="2" ${currentValue == 2 ? 'selected' : ''}>2 - Capable</option>
-                    <option value="3" ${currentValue == 3 ? 'selected' : ''}>3 - Proficient</option>
-                    <option value="4" ${currentValue == 4 ? 'selected' : ''}>4 - Impressive</option>
-                </select>
+            <div class="bg-slate-950 border border-slate-800 rounded-lg p-2 flex flex-col">
+                <span class="text-[9px] uppercase font-bold text-slate-500 tracking-wider truncate">${label}</span>
+                <span class="text-xs font-semibold ${levelColors[val] || 'text-slate-300'} mt-0.5 truncate">${levelLabels[val] || val}</span>
             </div>`;
         }
 
-        function calculateSingleSongTotal(song) {
-            return parseInt(song.scores.technique) + parseInt(song.scores.rhythmic) + parseInt(song.scores.accuracy) + parseInt(song.scores.dynamics) + parseInt(song.scores.flair);
+        function calculateSingleSongTotal(scores) {
+            if(!scores) return 5;
+            return parseInt(scores.technique||1) + parseInt(scores.rhythmic||1) + parseInt(scores.accuracy||1) + parseInt(scores.dynamics||1) + parseInt(scores.flair||1);
         }
 
         function calculateRepertoireMastery() {
@@ -801,7 +846,10 @@
             }
             let totalPoints = 0;
             const maxPoints = totalSongs * 20;
-            analyticsPayload.songs.forEach(song => { totalPoints += calculateSingleSongTotal(song); });
+            analyticsPayload.songs.forEach(song => { 
+                const latest = getLatestSongLog(song);
+                totalPoints += calculateSingleSongTotal(latest.scores); 
+            });
             const percentage = Math.round((totalPoints / maxPoints) * 100);
             
             document.getElementById('kpi-repertoire').innerText = `${percentage}%`;
@@ -811,7 +859,13 @@
 
         function addSong() {
             if(!isAdmin) return;
-            analyticsPayload.songs.push({ id: Date.now(), title: "New Repertoire Title", scores: { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 }, comment: "", history: [] });
+            analyticsPayload.songs.push({ 
+                id: Date.now(), 
+                title: "New Repertoire Title", 
+                logs: [
+                    { id: "log-" + Date.now(), date: new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric'}), scores: { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 }, comment: "Initial repertoire baseline created." }
+                ]
+            });
             renderAnalyticsUI();
         }
 
@@ -824,12 +878,123 @@
         }
 
         function updateSongTitle(index, val) { analyticsPayload.songs[index].title = val; }
-        function updateSongScore(index, metric, val) { 
-            analyticsPayload.songs[index].scores[metric] = parseInt(val); 
-            document.getElementById(`song-total-${index}`).innerText = `${calculateSingleSongTotal(analyticsPayload.songs[index])}/20 Pts`;
-            calculateRepertoireMastery();
+
+        // --- HISTORY DRAWER & LOG MODAL LOGIC ---
+        function openSongHistoryModal(songIndex) {
+            const song = analyticsPayload.songs[songIndex];
+            document.getElementById('drawer-title').innerText = song.title;
+            document.getElementById('drawer-subtitle').innerText = "Repertoire Evolution & Coaching Timeline";
+            
+            const container = document.getElementById('drawer-timeline-container');
+            if(!song.logs || song.logs.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 italic py-6">No historical entries found for this song.</p>`;
+            } else {
+                container.innerHTML = song.logs.map((log, idx) => `
+                    <div class="relative pl-6 border-l-2 ${idx === 0 ? 'border-amber-500' : 'border-slate-700'} space-y-2">
+                        <div class="absolute -left-[7px] top-0 w-3 h-3 rounded-full ${idx === 0 ? 'bg-amber-500 ring-4 ring-amber-500/20' : 'bg-slate-700'}"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold font-mono ${idx === 0 ? 'text-amber-500' : 'text-slate-400'}">${log.date} ${idx === 0 ? '(Latest Active)' : ''}</span>
+                            <span class="text-xs font-mono font-bold bg-slate-800 text-amber-400 px-2 py-0.5 rounded border border-slate-700">${calculateSingleSongTotal(log.scores)}/20 Pts</span>
+                        </div>
+                        <div class="grid grid-cols-5 gap-1 py-1">
+                            <span class="text-[9px] bg-slate-950 px-1.5 py-0.5 rounded text-slate-400 text-center">Tech: ${log.scores.technique}</span>
+                            <span class="text-[9px] bg-slate-950 px-1.5 py-0.5 rounded text-slate-400 text-center">Rhy: ${log.scores.rhythmic}</span>
+                            <span class="text-[9px] bg-slate-950 px-1.5 py-0.5 rounded text-slate-400 text-center">Acc: ${log.scores.accuracy}</span>
+                            <span class="text-[9px] bg-slate-950 px-1.5 py-0.5 rounded text-slate-400 text-center">Dyn: ${log.scores.dynamics}</span>
+                            <span class="text-[9px] bg-slate-950 px-1.5 py-0.5 rounded text-slate-400 text-center">Flair: ${log.scores.flair}</span>
+                        </div>
+                        <p class="text-xs text-slate-300 bg-slate-950/70 p-3 rounded-xl border border-slate-800 leading-relaxed">${log.comment}</p>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('history-drawer').classList.remove('hidden');
         }
-        function updateSectionData(section, field, val) { analyticsPayload.sections[section][field] = val; }
+
+        function openSectionHistoryModal(sectionName) {
+            const secObj = analyticsPayload.sections[sectionName] || { logs: [] };
+            document.getElementById('drawer-title').innerText = `${sectionName} Section`;
+            document.getElementById('drawer-subtitle').innerText = "Sectional Progress Logs History";
+            
+            const container = document.getElementById('drawer-timeline-container');
+            if(!secObj.logs || secObj.logs.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 italic py-6">No historical entries found for this voice section.</p>`;
+            } else {
+                container.innerHTML = secObj.logs.map((log, idx) => `
+                    <div class="relative pl-6 border-l-2 ${idx === 0 ? 'border-blue-500' : 'border-slate-700'} space-y-2">
+                        <div class="absolute -left-[7px] top-0 w-3 h-3 rounded-full ${idx === 0 ? 'bg-blue-500 ring-4 ring-blue-500/20' : 'bg-slate-700'}"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold font-mono ${idx === 0 ? 'text-blue-400' : 'text-slate-400'}">${log.date} ${idx === 0 ? '(Latest Active)' : ''}</span>
+                            <span class="text-xs font-mono font-bold bg-slate-800 text-amber-500 px-2 py-0.5 rounded border border-slate-700">Score: ${log.score}/10</span>
+                        </div>
+                        <p class="text-xs text-slate-300 bg-slate-950/70 p-3 rounded-xl border border-slate-800 leading-relaxed">${log.comment}</p>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('history-drawer').classList.remove('hidden');
+        }
+
+        function closeHistoryDrawer() { document.getElementById('history-drawer').classList.add('hidden'); }
+
+        function openAddLogModal(type, targetKey) {
+            if(!isAdmin) return;
+            document.getElementById('add-log-target-type').value = type;
+            document.getElementById('add-log-target-key').value = targetKey;
+            
+            const todayStr = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric'});
+            document.getElementById('add-log-date').value = todayStr;
+            document.getElementById('add-log-comment').value = '';
+
+            if (type === 'song') {
+                document.getElementById('add-log-modal-title').innerText = `Add Log: ${analyticsPayload.songs[targetKey].title}`;
+                document.getElementById('add-log-song-scores').classList.remove('hidden');
+                document.getElementById('add-log-section-score').classList.add('hidden');
+            } else {
+                document.getElementById('add-log-modal-title').innerText = `Add Log: ${targetKey} Section`;
+                document.getElementById('add-log-song-scores').classList.add('hidden');
+                document.getElementById('add-log-section-score').classList.remove('hidden');
+            }
+
+            document.getElementById('add-log-modal').classList.remove('hidden');
+        }
+
+        function closeAddLogModal() { document.getElementById('add-log-modal').classList.add('hidden'); }
+
+        function handleAddLogSubmit(e) {
+            e.preventDefault();
+            const type = document.getElementById('add-log-target-type').value;
+            const key = document.getElementById('add-log-target-key').value;
+            const dateStr = document.getElementById('add-log-date').value.trim();
+            const commentStr = document.getElementById('add-log-comment').value.trim();
+
+            if (type === 'song') {
+                const song = analyticsPayload.songs[key];
+                if (!song.logs) song.logs = [];
+                song.logs.unshift({
+                    id: "log-" + Date.now(),
+                    date: dateStr,
+                    scores: {
+                        technique: parseInt(document.getElementById('log-score-tech').value),
+                        rhythmic: parseInt(document.getElementById('log-score-rhythm').value),
+                        accuracy: parseInt(document.getElementById('log-score-acc').value),
+                        dynamics: parseInt(document.getElementById('log-score-dyn').value),
+                        flair: parseInt(document.getElementById('log-score-flair').value)
+                    },
+                    comment: commentStr
+                });
+            } else {
+                const secObj = analyticsPayload.sections[key];
+                if (!secObj.logs) secObj.logs = [];
+                secObj.logs.unshift({
+                    id: "sec-log-" + Date.now(),
+                    date: dateStr,
+                    score: parseInt(document.getElementById('log-score-sec').value),
+                    comment: commentStr
+                });
+            }
+
+            closeAddLogModal();
+            renderAnalyticsUI();
+        }
 
         async function saveAnalyticsToHistory() {
             if(!isAdmin) return;
@@ -845,11 +1010,11 @@
             
             setTimeout(() => {
                 btn.innerHTML = ogText;
-                alert("Digital Signature Confirmed. Repertoire matrix snapshot securely saved to Google Sheets registry.");
+                alert("Digital Signature Confirmed. Repertoire matrix timeline snapshot securely saved to Google Sheets.");
             }, 1000);
         }
 
-        // --- PRODUCTION STABLE RENDERING PIPELINES ---
+        // --- DASHBOARD DATA & ATTENDANCE LOGIC ---
         function renderAllData() {
             renderAttendance();
             renderStudents();
@@ -1181,7 +1346,7 @@
                         analyticsPayload = jsonPayload.analyticsPayload;
                     }
 
-                    // Normalize student attendance arrays to match the active dates length
+                    // Normalize student attendance arrays
                     studentsState.forEach(student => {
                         if (!student.attendance || !Array.isArray(student.attendance)) {
                             student.attendance = [];
