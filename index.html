@@ -730,6 +730,17 @@
             if(!isAdmin) return;
             const todayStr = new Date().toISOString().split('T')[0];
             activeLessonDates.push(todayStr);
+
+            // Expand attendance arrays for all students to fit the new date
+            studentsState.forEach(student => {
+                if (!student.attendance) {
+                    student.attendance = [];
+                }
+                while (student.attendance.length < activeLessonDates.length) {
+                    student.attendance.push(false);
+                }
+            });
+
             renderDatePickerInputs();
             renderAttendance();
             autoSaveConfigDates(); 
@@ -744,6 +755,45 @@
             });
         }
 
+        // --- PASTE NEW FUNCTION HERE ---
+        function toggleAttendanceState(studentId, dateIdx) {
+            if (!isAdmin) return;
+            
+            // Find student in memory state
+            const student = studentsState.find(s => s.id === studentId);
+            if (!student) return;
+
+            // Initialize attendance array if missing
+            if (!student.attendance) {
+                student.attendance = new Array(activeLessonDates.length).fill(false);
+            }
+
+            // Ensure array length matches active lesson dates count
+            while (student.attendance.length < activeLessonDates.length) {
+                student.attendance.push(false);
+            }
+
+            // Toggle checkmark boolean
+            student.attendance[dateIdx] = !student.attendance[dateIdx];
+            
+            // Recalculate total checkmarks
+            student.cumulativeChecks = student.attendance.filter(Boolean).length;
+
+            // Update UI & Executive Analytics instantly
+            renderAttendance();
+            calculateAnalyticsMetrics();
+
+            // Sync state update to Google Apps Script backend
+            executePostPayload({
+                action: "updateAttendance",
+                month: document.getElementById('config-month').value,
+                studentId: studentId,
+                dateIdx: dateIdx,
+                status: student.attendance[dateIdx],
+                attendance: student.attendance
+            });
+        }
+        
         function renderAttendance() {
             const theadRow = document.querySelector('#view-attendance table thead tr');
             const tbody = document.getElementById('attendance-table-body');
